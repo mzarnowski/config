@@ -1,0 +1,1 @@
+banshee google-chrome qnapi sublime-text-dev
