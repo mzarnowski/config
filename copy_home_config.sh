@@ -1,1 +1,0 @@
-cp ./home/.yaourtrc ~/.yaourtrc

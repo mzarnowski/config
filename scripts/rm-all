@@ -1,0 +1,2 @@
+rm -rf *;
+for i in *; do echo "Deleting: $i"; rm -f $i; done
