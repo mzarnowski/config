@@ -1,0 +1,2 @@
+time format:
+%Y.%m.%d ~ %H:%M

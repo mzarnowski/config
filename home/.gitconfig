@@ -1,0 +1,54 @@
+[alias]
+	hist = log --pretty=format:'%Cred%h%Creset %C(bold blue)<%an>%Creset%C(yellow)%d%Creset %Cgreen(%cr)%Creset%n%w(80,8,8)%s' --graph
+    histfull = log --pretty=format:'%Cred%h%Creset %C(bold blue)<%an>%Creset%C(yellow)%d%Creset %Cgreen(%cr)%Creset%n%w(80,8,8)%s%n' --graph --name-status
+    llog = log --pretty=format:'%C(yellow)%h %Cred%ad %Cblue%an%Cgreen%d %Creset%s' --date=iso
+    changelog = log --pretty=format:'%Cgreen%d %Creset%s' --date=iso
+    ls = log --pretty=format:'%C(yellow)%p..%h %C(white dim)%cd %<|(49,trunc)%an %C(reset)%s' --date=short --abbrev=8 --no-merges
+    lol = log --graph --decorate --pretty=oneline --abbrev-commit --all
+
+	#what's going on, I don't even
+    anychanges = !sh -c 'git fetch' && git log --oneline HEAD..origin/$1
+    anychangesonmaster = !sh -c 'git fetch' && git log --oneline HEAD..origin/master
+    whoischanging = !sh -c 'git shortlog HEAD..origin/$0'
+    whoischangingmaster = !sh -c 'git shortlog HEAD..origin/master'
+
+	#BETTER VERSIONS OF BASIC COMMANDS
+
+    purr = pull --rebase
+    puff = pull --ff-only
+    difff = diff --color-words #just words
+    bbranch = branch -v    
+    branches = branch -avvl
+    sth = stash -u
+    unstage = reset HEAD --
+    alias = !git config --list | grep 'alias\\.' | sed 's/alias\\.\\([^=]*\\)=\\(.*\\)/\\1 => \\2/' | grep -v 'alias'| awk 'BEGIN { FS = \"=>\" }{ printf(\"%-20s=>%s\\n\", $1,$2)}'|sort
+    makegitrepo = !git init && git add . && git commit -m \"initial commit\"
+
+	#what do I have in my toolbox?
+    alias = !git config --list | grep 'alias\\.' | sed 's/alias\\.\\([^=]*\\)=\\(.*\\)/\\1\\\t => \\2/' | sort
+
+    #fiat lux
+    makegitrepo = !git init && git add . && git commit -m \"initial commit\"
+    
+    #Finds a filename in the git repository. Gives absolute location (from the git root).
+    find = !sh -c 'git ls-tree -r --name-only HEAD | grep --color $1' - 
+
+    #Deletes all branches that were safely merged into the master. All other are skipped (no worries).
+    cleanup = !git branch --merged=master | grep -Ev '^\\* | master$' | xargs -r git branch -d
+    
+	find = !sh -c 'git ls-tree -r --name-only HEAD | grep --color $1' - 
+
+
+	co = checkout
+	br = branch
+	st = status --short
+    merc = merge --no-ff
+	
+[user]
+	email = marek1840@gmail.com
+	name = Marek Żarnowski
+[core]
+	editor = vim
+	autocrlf = input
+[color]
+    ui = auto
