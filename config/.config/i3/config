@@ -140,7 +140,20 @@ bindsym $mod+Shift+8        move container to workspace $ws8
 bindsym $mod+Shift+9        move container to workspace $ws9
 bindsym $mod+Shift+0        move container to workspace $ws10
 
+set $lock ~/.config/i3/lock.sh
+set $logout ~/.config/i3/logout.sh
 
+set $mode_system System (l) lock, (e) logout, (r) reboot, (q) shutdown, (Esc) abort
+mode "$mode_system" {
+    bindsym l exec --no-startup-id $lock, mode "default"
+    bindsym e exec --no-startup-id $logout, mode "default"
+    bindsym r exec --no-startup-id systemctl reboot, mode "default"
+    bindsym q exec --no-startup-id systemctl poweroff -i, mode "default"
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+}
+
+bindsym $mod+Pause mode "$mode_system"
 
 # reload the configuration file
 bindsym $mod+Shift+c reload
