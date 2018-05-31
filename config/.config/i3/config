@@ -208,8 +208,20 @@ client.background       #212121
 # Start i3bar to display a workspace bar (plus the system information i3status
 # finds out, if available)
 bar {
-        position top
-        status_command i3blocks
+        position                top
+        status_command          i3blocks
+        workspace_buttons       yes
+        colors {
+            background  #212121
+            statusline  #DDDDDD
+            separator   #666666
+
+            # class             border  backgr. text
+            focused_workspace   #2B83A6 #2B83A6 #FFFFFF
+            active_workspace    #212121 #212121 #FFFFFF
+            inactive_workspace  #212121 #212121 #86888C
+            urgent_workspace    #D64E4E #D64E4E #FFFFFF
+    }
 }
 
 hide_edge_borders both
