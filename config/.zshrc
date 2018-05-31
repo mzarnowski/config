@@ -1,6 +1,8 @@
 # Path to your oh-my-zsh installation.
 export ZSH=/home/marek/.oh-my-zsh
-export LD_PRELOAD=/usr/lib/jvm/java-8-openjdk/jre/lib/amd64/libjsig.so
+# export LD_PRELOAD=/usr/lib/jvm/java-8-openjdk/jre/lib/amd64/libjsig.so
+export MAVEN_OPTS="-Xms1024m -Xmx2048m"
+export JAVA_HOME=/usr/lib/jvm/java-8-openjdk
 
 EDITOR=vim
 DEFAULT_USER="marek"
@@ -67,7 +69,7 @@ REPORTTIME=5
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git sudo common-aliases mvn python sbt scala sublime zsh-syntax-highlighting)
+plugins=(git sudo common-aliases mvn python sbt scala sublime zsh-syntax-highlighting docker)
 
 # User configuration
 
@@ -93,7 +95,21 @@ source $ZSH/oh-my-zsh.sh
 # ssh
 # export SSH_KEY_PATH="~/.ssh/dsa_id"
 
-eval $(thefuck --alias)
+# eval $(thefuck --alias)
+
+git_update(){
+    pushd /workspace/compact/clean-222
+    git pull origin release-2.2.2
+    popd
+
+    pushd /workspace/compact/clean-31
+    git pull origin release-3.1
+    popd
+
+    pushd /workspace/compact/clean-master
+    git pull origin master
+    popd
+}
 
 # Set personal aliases, overriding those provided by oh-my-zsh libs,
 # plugins, and themes. Aliases can be placed here, though oh-my-zsh
@@ -116,8 +132,8 @@ alias pip="sudo pip2"
 
 alias retro="cool-retro-term"
 
-alias student="ssh zarnowsk@student.agh.edu.pl"
 
+alias start-work="~/configuration/compact/start-work"
 alias ssh-devel="ssh marek.zarnowski@devel02"
 alias ssh-cloudera="ssh marek.zarnowski@cloudera01"
 alias ssh-svn="ssh marek.zarnowski@svn"
