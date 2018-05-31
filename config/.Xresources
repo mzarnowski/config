@@ -16,26 +16,26 @@ URxvt.iso14755:         False
 URxvt.font:         xft:DejaVu Sans Mono:size=16:Regular
 URxvt.boldFont:     xft:DejaVu Sans Mono:size=16:Bold
 URxvt.letterSpace:  -1
-URxvt.foreground: 	#e5c7a9
+*foreground: 	#e5c7a9
 
 ! color theme 		-------
-URxvt.background: 	#292520
-URxvt.color0:		#121418
-URxvt.color1:		#c94234
-URxvt.color2:		#85c54c
-URxvt.color3:		#f5ae2e
-URxvt.color4:		#1398b9
-URxvt.color5:		#d0633d
-URxvt.color6:		#509552
-URxvt.color7:		#e5c6aa
-URxvt.color8:		#675f54
-URxvt.color9:		#ff645a
-URxvt.color10:		#98e036
-URxvt.color11:		#e0d561
-URxvt.color12:		#5fdaff
-URxvt.color13:		#ff9269
-URxvt.color14:		#84f088
-URxvt.color15:		#f6f7ec
+*background: 	#292520
+*color0:		#121418
+*color1:		#c94234
+*color2:		#85c54c
+*color3:		#f5ae2e
+*color4:		#1398b9
+*color5:		#d0633d
+*color6:		#509552
+*color7:		#e5c6aa
+*color8:		#675f54
+*color9:		#ff645a
+*color10:		#98e036
+*color11:		#e0d561
+*color12:		#5fdaff
+*color13:		#ff9269
+*color14:		#84f088
+*color15:		#f6f7ec
 
 ! keymap
 URxvt.keysym.Control-Up:     \033[1;5A
@@ -48,6 +48,9 @@ URxvt.keysym.Shift-Control-C: eval:selection_to_clipboard
 
 ! scrollBar   		-------
 URxvt.scrollBar:    false
+
+! scroll in relation to buffer (with mouse scroll or Shift+Page Up)
+URxvt*scrollWithBuffer: true
 
 ! url matching		-------
 URxvt.url-launcher: /usr/bin/xdg-open
