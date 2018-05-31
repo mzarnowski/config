@@ -8,8 +8,9 @@ Xft.dpi:       96
 Xft.rgba:      rgb
 
 ! urxvt general     -------
-URxvt.saveLines:     20000
-URxvt.perl-ext-common: default,matcher,resize-font
+URxvt.saveLines:        20000
+URxvt.perl-ext-common:  default,matcher,resize-font
+URxvt.iso14755:         False
 
 ! fonts       		-------
 URxvt.font:         xft:DejaVu Sans Mono:size=16:Regular
