@@ -8,8 +8,9 @@ Xft.dpi:       96
 Xft.rgba:      rgb
 
 ! fonts       -------
-URxvt.font:     xft:DejaVu Sans Mono:size=16:Regular
-URxvt.boldFont: xft:DejaVu Sans Mono:size=16:Bold
+URxvt.font:         xft:DejaVu Sans Mono:size=16:Regular
+URxvt.boldFont:     xft:DejaVu Sans Mono:size=16:Bold
+URxvt.letterSpace:  -1
 URxvt.foreground: 	#e5c7a9
 
 ! color theme -------
