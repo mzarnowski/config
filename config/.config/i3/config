@@ -221,6 +221,8 @@ bar {
         position                top
         status_command          i3blocks
         workspace_buttons       yes
+        tray_output             DVI-I-1
+        tray_padding            0
         colors {
             background  #212121
             statusline  #DDDDDD
