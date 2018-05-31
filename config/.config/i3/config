@@ -247,8 +247,6 @@ assign [class="google-chrome"]          $ws1
 assign [class="jetbrains-idea"]         $ws3 
 assign [class="Rambox"]                 $ws10
 
-bindsym $mod+Shift+x exec "i3lock"
-
 exec --no-startup-id urxvtd
 exec --no-startup-id dropbox
 exec --no-startup-id rambox
