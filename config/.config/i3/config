@@ -240,4 +240,5 @@ bindsym $mod+Shift+x exec "i3lock"
 exec --no-startup-id urxvtd
 exec --no-startup-id dropbox
 exec --no-startup-id rambox
+exec --no-startup-id compton -f --config ~/.config/compton/compton.conf 
 
