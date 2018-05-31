@@ -7,6 +7,10 @@ Xft.antialias: true
 Xft.dpi:       96
 Xft.rgba:      rgb
 
+! urxvt general     -------
+URxvt.saveLines:     20000
+URxvt.perl-ext-common: default,matcher,resize-font
+
 ! fonts       		-------
 URxvt.font:         xft:DejaVu Sans Mono:size=16:Regular
 URxvt.boldFont:     xft:DejaVu Sans Mono:size=16:Bold
@@ -40,9 +44,6 @@ URxvt.keysym.Control-Right:  \033[1;5C
 
 ! scrollBar   		-------
 URxvt.scrollBar:    false
-
-! perl extension	-------
-URxvt.perl-ext-common: default,matcher,resize-font
 
 ! url matching		-------
 URxvt.url-launcher: /usr/bin/xdg-open
