@@ -7,13 +7,13 @@ Xft.antialias: true
 Xft.dpi:       96
 Xft.rgba:      rgb
 
-! rxvt-unicode -------
+! fonts       -------
 URxvt.font:     xft:DejaVu Sans Mono:size=16:Regular
 URxvt.boldFont: xft:DejaVu Sans Mono:size=16:Bold
-
-! ir-black color theme -------
-URxvt.background: 	#292520
 URxvt.foreground: 	#e5c7a9
+
+! color theme -------
+URxvt.background: 	#292520
 URxvt.color0:		#121418
 URxvt.color1:		#c94234
 URxvt.color2:		#85c54c
@@ -30,3 +30,6 @@ URxvt.color12:		#5fdaff
 URxvt.color13:		#ff9269
 URxvt.color14:		#84f088
 URxvt.color15:		#f6f7ec
+
+! scrollbar
+URxvt.scrollBar:    false
