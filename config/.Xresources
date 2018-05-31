@@ -36,7 +36,7 @@ URxvt.color15:		#f6f7ec
 URxvt.scrollBar:    false
 
 ! perl extension	-------
-URxvt.perl-ext-common: default,matcher
+URxvt.perl-ext-common: default,matcher,resize-font
 
 ! url matching		-------
 URxvt.url-launcher: /usr/bin/xdg-open
