@@ -1,1 +1,1 @@
-google-chrome qnapi sublime-text-dev
+google-chrome qnapi sublime-text-dev rxvt-unicode-pixbuf urxvt-resize-font-git
