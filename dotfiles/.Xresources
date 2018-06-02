@@ -13,8 +13,8 @@ URxvt.perl-ext-common:  default,matcher,resize-font
 URxvt.iso14755:         False
 
 ! fonts       		-------
-URxvt.font:         xft:DejaVu Sans Mono:size=16:Regular
-URxvt.boldFont:     xft:DejaVu Sans Mono:size=16:Bold
+URxvt.font:         xft:DejaVu Sans Mono:size=15:Regular
+URxvt.boldFont:     xft:DejaVu Sans Mono:size=15:Bold
 URxvt.letterSpace:  -1
 *foreground: 	#e5c7a9
 
