@@ -111,6 +111,18 @@ git_update(){
     popd
 }
 
+fetch(){
+    branch=$1
+    echo "Fetching branch ${branch}"
+    git fetch origin "${branch}:${branch}"
+}
+
+push(){
+    branch="$(git rev-parse --abbrev-ref HEAD)"
+    echo "Pushing branch ${branch} to origin"
+    git push origin "$branch"
+}
+
 # Set personal aliases, overriding those provided by oh-my-zsh libs,
 # plugins, and themes. Aliases can be placed here, though oh-my-zsh
 # users are encouraged to define aliases within the ZSH_CUSTOM folder.
