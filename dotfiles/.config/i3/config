@@ -257,6 +257,7 @@ exec --no-startup-id urxvtd
 exec --no-startup-id dropbox
 exec --no-startup-id rambox
 exec --no-startup-id compton -f --config ~/.config/compton/compton.conf 
+exec --no-startup-id betterlockscreen -u /dropbox/reinstall/great_wpp/
 exec_always --no-startup-id feh --bg-scale --randomize /dropbox/reinstall/great_wpp/
 # list open windows to switch to
 bindsym $alt+Tab exec "rofi -show-icons -show window"
