@@ -123,12 +123,12 @@ push(){
     git push origin "$branch"
 }
 
-git::repository_dir(){
-    git rev-parse --git-dir
+git::inside_work_tree(){
+    git rev-parse --is-inside-work-tree
 }
 
 amend(){
-    if git::repository_dir > /dev/null
+    if git::inside_work_tree
     then
         git commit --amend
     fi
