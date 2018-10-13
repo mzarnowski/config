@@ -122,18 +122,18 @@ push(){
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh
 alias manjaro-update="sudo pacman -Syuu"
+alias pacman-clean="sudo pacman -Rns $(pacman -Qtdq)"
 
-alias ll="ls -lh"
+alias ll="k -h"
+alias l="ll --no-vcs"
+alias cat="bat"
 alias dr="cd ~/Dropbox"
 alias dl="cd ~/Downloads"
 alias cloudera="cd ~/work/cloudera"
 alias compact="~/work/compact"
+alias mv="mv -i"
 alias open="xdg-open"
-alias activator="/opt/scala-activator/activator"
-alias pip="sudo pip2"
-
-alias retro="cool-retro-term"
-
+alias postgres-start="systemctl start postgresql.service && systemctl enable postgresql.service"
 
 alias start-work="~/configuration/compact/start-work"
 alias ssh-devel="ssh marek.zarnowski@devel02"
