@@ -50,6 +50,7 @@
 [core]
 	editor = vim
 	autocrlf = input
+	preloadIndex = true
 [color]
     ui = auto
 [push]
