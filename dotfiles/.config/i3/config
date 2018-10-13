@@ -109,6 +109,8 @@ set $ws8 "8"
 set $ws9 "9"
 set $ws10 "10"
 
+set $primary "LVDS1"
+
 # switch to workspace
 bindsym $mod+Home		workspace $ws1
 bindsym $mod+Prior		workspace prev
@@ -127,10 +129,10 @@ bindsym $mod+9          workspace $ws9
 bindsym $mod+0          workspace $ws10
 
 # assign workspaces to specific monitors
-workspace $ws1  output DVI-I-1
-workspace $ws2  output DVI-I-1
-workspace $ws3  output DVI-I-1
-workspace $ws10 output DVI-I-1
+workspace $ws1  output $primary
+workspace $ws2  output $primary
+workspace $ws3  output $primary
+workspace $ws10 output $primary
 
 workspace $ws4 output DVI-D-0
 workspace $ws5 output DVI-D-0
@@ -223,7 +225,7 @@ bar {
         position                top
         status_command          i3blocks
         workspace_buttons       yes
-        tray_output             DVI-I-1
+        tray_output             $primary
         tray_padding            0
         colors {
             background  #212121
