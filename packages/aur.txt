@@ -1,1 +1,1 @@
-google-chrome qnapi sublime-text-dev rxvt-unicode urxvt-resize-font-git
+google-chrome qnapi sublime-text-dev rxvt-unicode urxvt-resize-font-git betterlockscreen i3lock-color
