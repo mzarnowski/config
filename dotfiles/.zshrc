@@ -95,20 +95,10 @@ source $ZSH/oh-my-zsh.sh
 # ssh
 # export SSH_KEY_PATH="~/.ssh/dsa_id"
 
-# eval $(thefuck --alias)
-
 git_update(){
-    pushd /workspace/compact/clean-222
-    git pull origin release-2.2.2
-    popd
-
-    pushd /workspace/compact/clean-31
-    git pull origin release-3.1
-    popd
-
-    pushd /workspace/compact/clean-master
-    git pull origin master
-    popd
+    (cd /workspace/compact/clean-222    && git pull origin release-2.2.2)
+    (cd /workspace/compact/clean-31     && git pull origin release-3.1)
+    (cd /workspace/compact/clean-master && git pull origin master)
 }
 
 fetch(){
