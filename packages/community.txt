@@ -1,1 +1,1 @@
-zsh terminator thunderbird tmux unrar vim git synapse visualvm maven sbt okular redshift dropbox dos2unix vlc downgrade gnuplot vertex-maia-themes vertex-maia-icon-theme wget qbittorrent youtube-dl w3m
+zsh terminator thunderbird tmux unrar vim git maven okular redshift dropbox dos2unix vlc downgrade gnuplot wget qbittorrent youtube-dl bat
