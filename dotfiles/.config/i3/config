@@ -249,7 +249,7 @@ for_window [class="Shutter"]            floating enable
 
 assign [class="jetbrains-idea"]         $ws2
 assign [class="Rambox"]                 $ws10
-assign [class="thunderbird"]            $ws10
+assign [class="Thunderbird"]            $ws10
 
 exec --no-startup-id nm-applet
 exec --no-startup-id udiskie -Nt2
