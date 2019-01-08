@@ -1,0 +1,23 @@
+$include /etc/inputrci
+
+set bell-style none
+set bell-style visible
+set colored-stats on
+set completion-ignore-case on
+set completion-prefix-display-length 8
+set mark-symlinked-directories on
+# Perform partial completion on the first Tab press,
+# only start cycling full results on the second Tab press
+set menu-complete-display-prefix on   
+set show-all-if-ambiguous on
+set show-all-if-unmodified on
+set visible-stats on
+
+"\e[5~":    history-search-backward     # page up
+"\e[6~":    history-search-forward      # page down
+
+"\e[1;5C":  forward-word                # ctrl + right
+"\e[1;5D":  backward-word               # ctrl + left
+
+"\t":       menu-complete               # tab
+"\e[Z":     menu-complete-backward      # shift + tab
