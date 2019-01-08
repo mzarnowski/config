@@ -1,1 +1,1 @@
-zsh terminator thunderbird tmux unrar vim git maven okular redshift dos2unix vlc downgrade gnuplot wget qbittorrent youtube-dl bat i3-wm i3blocks i3status
+terminator thunderbird tmux unrar vim git maven dos2unix vlc downgrade wget bat i3-wm i3blocks i3status
