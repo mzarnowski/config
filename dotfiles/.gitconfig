@@ -45,7 +45,7 @@
     merc = merge --no-ff
 	
 [user]
-	email = marek1840@gmail.com
+	email = mzarnowski@virtuslab.com
 	name = Marek Żarnowski
 [core]
 	editor = vim
