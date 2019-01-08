@@ -95,24 +95,6 @@ source $ZSH/oh-my-zsh.sh
 # ssh
 # export SSH_KEY_PATH="~/.ssh/dsa_id"
 
-git_update(){
-    (cd /workspace/compact/clean-222    && git pull origin release-2.2.2)
-    (cd /workspace/compact/clean-31     && git pull origin release-3.1)
-    (cd /workspace/compact/clean-master && git pull origin master)
-}
-
-fetch(){
-    branch=$1
-    echo "Fetching branch ${branch}"
-    git fetch origin "${branch}:${branch}"
-}
-
-push(){
-    branch="$(git rev-parse --abbrev-ref HEAD)"
-    echo "Pushing branch ${branch} to origin"
-    git push origin "$branch"
-}
-
 # Set personal aliases, overriding those provided by oh-my-zsh libs,
 # plugins, and themes. Aliases can be placed here, though oh-my-zsh
 # users are encouraged to define aliases within the ZSH_CUSTOM folder.
@@ -121,18 +103,4 @@ push(){
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh
-alias manjaro-update="sudo pacman -Syuu"
-alias pacman-clean="sudo pacman -Rns $(pacman -Qtdq)"
-
-alias ll="k -h"
-alias l="ll --no-vcs"
-alias cat="bat"
-alias dr="cd ~/Dropbox"
-alias dl="cd ~/Downloads"
-alias mv="mv -i"
-alias open="xdg-open"
-alias postgres-start="systemctl start postgresql.service && systemctl enable postgresql.service"
-
-alias start-work="~/configuration/compact/start-work"
-alias ssh-devel="ssh marek.zarnowski@devel02"
 
