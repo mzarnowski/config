@@ -33,6 +33,6 @@ DEFAULT='\e[m'
 # \h - host
 # \w - working dir
 
-PROMPT_LINE_1="╭─[\A]-[${GREEN}\u${CYAN}@${GREEN}\h${DEFAULT}] ${BLUE}\w${DEFAULT}"
-PROMPT_LINE_2="╰─\$ "
+PROMPT_LINE_1="[\A]-[${GREEN}\u${CYAN}@${GREEN}\h${DEFAULT}] ${BLUE}\w${DEFAULT}"
+PROMPT_LINE_2="\$ "
 export PS1="${PROMPT_LINE_1}\n${PROMPT_LINE_2}"
