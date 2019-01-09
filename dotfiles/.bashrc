@@ -2,9 +2,14 @@
 # ~/.bashrc
 #
 
+# If not running interactively, don't do anything
 [[ $- != *i* ]] && return
 
-[[ -f ~/.bash_profile ]] && source  ~/.bash_profile
+for file in ~/.config/bash/*.sh ; do
+    [[ -r "${file}" ]] && [[ -f "${file}" ]] && source $file;
+done;
+
+unset file;
 
 colors() {
 	local fgc bgc vals seq0
@@ -32,6 +37,8 @@ colors() {
 		echo; echo
 	done
 }
+
+[ -r /usr/share/bash-completion/bash_completion ] && . /usr/share/bash-completion/bash_completion
 
 # Change the window title of X terminals
 case ${TERM} in
@@ -128,5 +135,3 @@ ex ()
 
 # better yaourt colors
 export YAOURT_COLORS="nb=1:pkg=1:ver=1;32:lver=1;45:installed=1;42:grp=1;34:od=1;41;5:votes=1;44:dsc=0:other=1;35"
-
-export PATH=${PATH}:~/opt/bloop
