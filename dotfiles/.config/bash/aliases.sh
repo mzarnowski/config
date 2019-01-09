@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+
 alias rebash="source ~/.bash_profile"   # Reload .bash_profile
 
 alias ..="cd .."
@@ -26,3 +27,5 @@ alias gst="git status --short"
 alias gcp="git cherry-pick"
 alias gdiff="git diff"
 alias glol="git lol"
+alias gm="gco master"
+alias gcp="git cherry-pick"
