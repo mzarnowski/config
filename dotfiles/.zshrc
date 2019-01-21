@@ -1,5 +1,5 @@
 # Path to your oh-my-zsh installation.
-export ZSH=/home/marek/.oh-my-zsh
+export ZSH=/home/mzarnowski/.oh-my-zsh
 # export LD_PRELOAD=/usr/lib/jvm/java-8-openjdk/jre/lib/amd64/libjsig.so
 export MAVEN_OPTS="-Xms1024m -Xmx2048m"
 export JAVA_HOME=/usr/lib/jvm/java-8-openjdk
@@ -103,4 +103,4 @@ source $ZSH/oh-my-zsh.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh
-
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
