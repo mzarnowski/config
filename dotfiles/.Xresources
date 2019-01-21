@@ -10,6 +10,8 @@ Xft.rgba:      rgb
 ! urxvt general     -------
 URxvt.saveLines:        20000
 URxvt.perl-ext-common:  default,matcher,resize-font
+URxvt*inheritPixmap:    False
+URxvt*transparent:      False
 URxvt.iso14755:         False
 
 ! fonts       		-------
