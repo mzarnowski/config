@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 alias rebash="source ~/.bash_profile"   # Reload .bash_profile
 
 alias ..="cd .."
@@ -19,13 +18,15 @@ alias ls="exa -l"
 alias more=less
 alias open="xdg-open"
 alias path='echo $PATH | tr -s ":" "\n"' # Pretty print the path
+alias rm="rm -I"
 
 
 #### git
 alias gco="git checkout"
-alias gst="git status --short"
+alias gcb="gco -b"
 alias gcp="git cherry-pick"
-alias gdiff="git diff"
+alias gcp="git cherry-pick"
+alias gdf="git diff"
 alias glol="git lol"
-alias gm="gco master"
-alias gcp="git cherry-pick"
+alias gcm="gco master"
+alias gst="git status --short"
