@@ -20,34 +20,6 @@ _complete_running_processes ()
 }
 complete -o bashdefault -o default -o nospace -F _complete_running_processes killall
 
-# Add case-insensitive `kill` tab completion of running apps
-_complete_running_processes_pids ()
-{
-	local re
-	local LC_ALL='C'
-	local IFS=$'\n'
-	local cur=${COMP_WORDS[COMP_CWORD]}
-
-	COMPREPLY=()
-
-	# do not attempt completion if we're specifying an option
-	[[ "$cur" == -* ]] && return 0
-
-	# Escape dots in paths for grep
-	cur=${cur//\./\\\.}
-
-	if [[ $cur != *[!0-9]* ]]; then
-		# search by PID
-		re="^$cur"
-	else
-		# search by process name
-		re="^[0-9]+ # $cur[^$]"
-	fi
-
-	COMPREPLY=( $(ps axc | tail -n +2 | awk '{print $1 " # " $5}' | sort -u | grep -v "^[\-\(]" | egrep -i "$re") )
-}
-complete -o bashdefault -o default -o nospace -F _complete_running_processes_pids kill
-
 # If possible, add tab completion for many more commands
 if [ -f /opt/local/share/doc/git-core/contrib/completion/git-completion.bash ]; then
 	. /opt/local/share/doc/git-core/contrib/completion/git-completion.bash
