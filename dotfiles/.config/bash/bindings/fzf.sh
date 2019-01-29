@@ -15,8 +15,7 @@ __fuzzy_history__() {
 }
 
 bind_fzf(){
-    echo "fzf"
     bind -x '"\C-r": __fuzzy_history__'
 }
 
-type fzf > /dev/null 2> /dev/null && bind_fzf
+[ -d ${HOME}/.fzf/bin ] && bind_fzf
