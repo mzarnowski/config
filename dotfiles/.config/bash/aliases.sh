@@ -18,8 +18,9 @@ alias ls="exa -l"
 alias more=less
 alias open="xdg-open"
 alias path='echo $PATH | tr -s ":" "\n"' # Pretty print the path
+alias reboot="confirm reboot"
 alias rm="rm -I"
-
+alias shutdown="confirm shutdown"
 
 #### git
 alias gco="git checkout"
