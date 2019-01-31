@@ -5,11 +5,17 @@
 # If not running interactively, don't do anything
 [[ $- != *i* ]] && return
 
-for file in ~/.config/bash/*.sh ; do
-    [[ -r "${file}" ]] && [[ -f "${file}" ]] && source $file;
-done;
+source_all(){
+    local directory=$1
+    [[ -d "${directory}" ]] || return
 
-unset file;
+    for file in ${directory}{,/**}/*.sh
+    do
+        [[ -r "${file}" ]] && [[ -f "${file}" ]] && source "${file}"
+    done
+}
+
+source_all ${HOME}/.config/bash
 
 colors() {
 	local fgc bgc vals seq0
