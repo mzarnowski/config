@@ -1,5 +1,5 @@
 # Path to your oh-my-zsh installation.
-export ZSH=/home/mzarnowski/.oh-my-zsh
+export ZSH=${HOME}/.oh-my-zsh
 # export LD_PRELOAD=/usr/lib/jvm/java-8-openjdk/jre/lib/amd64/libjsig.so
 export MAVEN_OPTS="-Xms1024m -Xmx2048m"
 export JAVA_HOME=/usr/lib/jvm/java-8-openjdk
