@@ -1,4 +1,4 @@
-_fzf_complete_kill() {
+__fuzzy_complete_kill() {
   local pattern=${COMP_WORDS[COMP_CWORD]}
   # do not attempt completion if we're specifying an option
   [[ "$pattern" == -* ]] && return 0
@@ -17,5 +17,5 @@ _fzf_complete_kill() {
   [ -n "$selected" ] && COMPREPLY=( "$selected" )
 }
 
-complete -F _fzf_complete_kill -o nospace -o default -o bashdefault kill
+complete -F __fuzzy_complete_kill -o nospace -o default -o bashdefault kill
 
