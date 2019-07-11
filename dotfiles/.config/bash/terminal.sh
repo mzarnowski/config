@@ -16,11 +16,3 @@ shopt -s cdspell 2> /dev/null   # Correct spelling errors in arguments supplied 
 case "$TERM" in
     xterm-color|*-256color) color_prompt=yes;;
 esac
-
-# enable programmable completion features (you don't need to enable
-# this, if it's already enabled in /etc/bash.bashrc and /etc/profile
-# sources /etc/bash.bashrc).
-if ! shopt -oq posix; then
-  [[ -f /usr/share/bash-completion/bash_completion ]] && . /usr/share/bash-completion/bash_completion || \
-    [[ -f /etc/bash_completion ]] && . /etc/bash_completion
-fi

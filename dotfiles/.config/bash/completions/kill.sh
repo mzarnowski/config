@@ -2,7 +2,7 @@ __fuzzy_complete_kill() {
   local pattern=${COMP_WORDS[COMP_CWORD]}
   # do not attempt completion if we're specifying an option
   [[ "$pattern" == -* ]] && return 0
-
+  
   local selected=$(
   	FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS $FZF_COMPLETION_OPTS\
   		--height 50% \
@@ -13,7 +13,6 @@ __fuzzy_complete_kill() {
   	command ps -ef | sed 1d | fzf -m -q "${pattern}" | awk '{print $2}' | tr '\n' ' '
   )
   
-  printf '\e[5n'
   [ -n "$selected" ] && COMPREPLY=( "$selected" )
 }
 

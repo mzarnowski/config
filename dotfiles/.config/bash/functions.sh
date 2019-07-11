@@ -24,3 +24,13 @@ restore(){
     local target=$1
     mv "${target}"{.bak,}
 }
+
+sourceIfExists(){
+    local file=$1
+    [[ -f "${file}" ]] && . "${file}"
+}
+
+sbt()(
+    TERM=xterm-256color
+    command sbt "$@"
+)

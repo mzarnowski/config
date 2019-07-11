@@ -17,6 +17,14 @@ source_all(){
 
 source_all ${HOME}/.config/bash
 
+# enable programmable completion features (you don't need to enable
+# this, if it's already enabled in /etc/bash.bashrc and /etc/profile
+# sources /etc/bash.bashrc).
+if ! shopt -oq posix; then
+  sourceIfExists /usr/share/bash-completion/bash_completion || \
+      sourceIfExists /etc/bash_completion
+fi
+
 colors() {
 	local fgc bgc vals seq0
 
