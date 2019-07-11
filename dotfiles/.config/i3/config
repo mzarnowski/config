@@ -29,6 +29,7 @@ font pango:Input_Bold 10
 # Use Mouse+$mod to drag floating windows to their wanted position
 floating_modifier $mod
 focus_follows_mouse no
+mouse_warping none
 
 # start a terminal
 set $TERMINAL=urxvtcd
@@ -100,7 +101,7 @@ bindsym $mod+a focus parent
 # We use variables to avoid repeating the names in multiple places.
 set $ws1 "1"
 set $ws2 "2: dev"
-set $ws3 "3: fs"
+set $ws3 "3"
 set $ws4 "4"
 set $ws5 "5"
 set $ws6 "6"
@@ -109,7 +110,10 @@ set $ws8 "8"
 set $ws9 "9"
 set $ws10 "10"
 
-set $primary "DP2-1"
+
+set $primary "eDP1"
+#set $primary "DP2-3"
+set $secondary "DP2-1"
 
 # switch to workspace
 bindsym $mod+Home		workspace $ws1
@@ -132,11 +136,12 @@ bindsym $mod+0          workspace $ws10
 workspace $ws1  output $primary
 workspace $ws2  output $primary
 workspace $ws3  output $primary
-workspace $ws10 output $primary
+workspace $ws4  output $primary
 
-workspace $ws4 output DVI-D-0
-workspace $ws5 output DVI-D-0
-workspace $ws6 output DVI-D-0
+workspace $ws5  output $secondary
+workspace $ws6  output $secondary
+workspace $ws7  output $secondary
+workspace $ws10 output $secondary
 
 # move focused container to workspace
 bindsym $mod+Shift+Home	    move container to workspace $ws1
@@ -257,7 +262,7 @@ exec --no-startup-id autorandr --change
 exec --no-startup-id nm-applet
 exec --no-startup-id udiskie -Nt2
 exec --no-startup-id urxvtd
-# exec --no-startup-id redshift
+exec --no-startup-id redshiftgui
 # exec --no-startup-id dropbox
 exec --no-startup-id thunderbird
 # exec --no-startup-id rambox
