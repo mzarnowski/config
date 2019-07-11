@@ -1,13 +1,27 @@
-dotfiles="$(dirname "$(readlink -f $0)")"
+#!/bin/bash
 
-ln -s "${dotfiles}"/.config/i3 ~/.config/i3
-ln -s "${dotfiles}"/.config/ranger ~/.config/ranger
-ln -s "${dotfiles}"/.config/dunst ~/.config/dunst
-ln -s "${dotfiles}"/.config/chrome-flags.conf ~/.config/chrome-flags.conf
+dotdir=$(dirname "$(readlink -f "$0")")
 
+copy_dotfile()(
+    local dotfile=$1
+    [ "install.sh"  = "${dotfile}" ] && return 0
+    [ ".config"     = "${dotfile}" ] && return 0
+    
+    local target="${HOME}/${dotfile}"
+    [ -e "${target}" ]                      && 
+        echo "already exists: ${dotfile}"   && 
+        return 0                            
+    
+    ln -s "${dotdir}/${dotfile}" "${target}"
+)
 
-ln -s "${dotfiles}"/.i3blocks.conf ~/.i3blocks.conf
-ln -s "${dotfiles}"/.Xresources ~/.Xresources
-ln -s "${dotfiles}"/.zshrc ~/.zshrc
-ln -s "${dotfiles}"/.vimrc ~/.vimrc
-ln -s "${dotfiles}"/.gitconfig ~/.gitconfig
+copy_dotfiles()(
+    shopt -s dotglob
+
+    for dotfile in "${dotdir}"/{*,.config/*}
+    do
+        copy_dotfile "${dotfile#${dotdir}/}"
+    done
+)
+
+copy_dotfiles
