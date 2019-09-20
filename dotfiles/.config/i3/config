@@ -255,7 +255,7 @@ assign [class="Thunderbird"]            $ws10
 
 exec --no-startup-id nm-applet
 exec --no-startup-id udiskie -Nt2
-exec --no-startup-id urxvtd
+exec --no-startup-id urxvtd -q
 exec --no-startup-id redshift
 exec --no-startup-id dropbox
 exec --no-startup-id thunderbird
