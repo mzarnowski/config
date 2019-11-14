@@ -248,8 +248,10 @@ for_window [window_role="task_dialog"]  floating enable
 for_window [title="Preferences$"]       floating enable
 for_window [class="Lxappearance"]       floating enable
 for_window [class="Shutter"]            floating enable
+for_window [title="Android Emulator.*"] floating enable
 
 assign [class="jetbrains-idea"]         $ws2
+assign [class="jetbrains-studio"]       $ws2
 assign [class="Rambox"]                 $ws10
 assign [class="Thunderbird"]            $ws10
 
