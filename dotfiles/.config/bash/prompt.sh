@@ -37,6 +37,6 @@ gitref(){
     git rev-parse --abbrev-ref HEAD 2> /dev/null
 }
 
-PROMPT_LINE_1="╭─[\A]-[${GREEN}\u${CYAN}@${GREEN}\h${DEFAULT}] ${BLUE}\w${DEFAULT} ${BYELLOW}\$(gitref)${DEFAULT}"
+PROMPT_LINE_1="╭─|\A|${GREEN}\u${CYAN}@${GREEN}\h${DEFAULT}| ${BLUE}\w${DEFAULT} ${BYELLOW}\$(gitref)${DEFAULT}"
 PROMPT_LINE_2="╰─\$ "
 export PS1="${PROMPT_LINE_1}\n${PROMPT_LINE_2}"
