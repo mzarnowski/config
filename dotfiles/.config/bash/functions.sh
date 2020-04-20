@@ -24,3 +24,18 @@ restore(){
     local target=$1
     mv "${target}"{.bak,}
 }
+
+scrape(){
+	if [ -z "$1" ]
+	then
+		echo "[comma separated extensions] url"
+	elif [ -z "$2" ]
+	then
+		local root_url=$1
+		wget --recursive --html-extension --page-requisites --convert-links "${root_url}"
+	else
+		local root_url=$1
+		local comma_separated_extensions=$2
+		wget -A"${comma_separated_extensions}" --recursive --html-extension --page-requisites --convert-links "${root_url}"
+	fi
+}
