@@ -1,0 +1,15 @@
+#!/bin/sh
+
+#urxvtc -q "$@" 2>/dev/null
+output=$(urxvtc "$@" 2>&1)
+
+case $? in
+    0)  ;;
+    2)  # server not started 
+        urxvtd -q -o -f
+        urxvtc "$@"
+        ;;
+    *)  # other error
+        echo $output
+        ;;
+esac
