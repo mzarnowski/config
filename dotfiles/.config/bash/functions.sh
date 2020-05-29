@@ -24,3 +24,8 @@ restore(){
     local target=$1
     mv "${target}"{.bak,}
 }
+
+import(){
+    local script=$1
+    [ -f "${script}" ] && . "${script}"
+}
