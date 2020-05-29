@@ -8,11 +8,9 @@ copy_dotfile()(
     [ ".config"     = "${dotfile}" ] && return 0
     
     local target="${HOME}/${dotfile}"
-    [ -e "${target}" ]                      && 
-        echo "already exists: ${dotfile}"   && 
-        return 0                            
+    [ -e "${target}" ] && return 0
     
-    ln -s "${dotdir}/${dotfile}" "${target}"
+    ln -s "${dotdir}/${dotfile}" "${target}" && echo "installed ${dotfile}"
 )
 
 copy_dotfiles()(
