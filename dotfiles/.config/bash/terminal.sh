@@ -20,7 +20,9 @@ esac
 # enable programmable completion features (you don't need to enable
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
 # sources /etc/bash.bashrc).
+COMPLETIONS=/usr/share/bash-completion/bash_completion
+COMPLETIONS_FALLBACK=/etc/bash_completion
 if ! shopt -oq posix; then
-  [[ -f /usr/share/bash-completion/bash_completion ]] && . /usr/share/bash-completion/bash_completion || \
-    [[ -f /etc/bash_completion ]] && . /etc/bash_completion
+	import "${COMPLETIONS}" \
+	|| import "${COMPLETIONS_FALLBACK}"
 fi

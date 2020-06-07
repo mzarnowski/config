@@ -39,3 +39,8 @@ scrape(){
 		wget -A"${comma_separated_extensions}" --recursive --html-extension --page-requisites --convert-links "${root_url}"
 	fi
 }
+
+import(){
+    local script=$1
+    [ -f "${script}" ] && . "${script}"
+}

@@ -5,11 +5,17 @@
 # If not running interactively, don't do anything
 [[ $- != *i* ]] && return
 
-for file in ~/.config/bash/*.sh ; do
-    [[ -r "${file}" ]] && [[ -f "${file}" ]] && source $file;
-done;
+source_all(){
+    local directory=$1
+    [[ -d "${directory}" ]] || return
 
-unset file;
+    for file in ${directory}{,/**}/*.sh
+    do
+        [[ -r "${file}" ]] && [[ -f "${file}" ]] && source "${file}"
+    done
+}
+
+source_all ${HOME}/.config/bash
 
 colors() {
 	local fgc bgc vals seq0
@@ -42,7 +48,7 @@ colors() {
 
 # Change the window title of X terminals
 case ${TERM} in
-	xterm*|rxvt*|Eterm*|aterm|kterm|gnome*|interix|konsole*)
+	alacritty|xterm*|rxvt*|Eterm*|aterm|kterm|gnome*|interix|konsole*)
 		PROMPT_COMMAND='echo -ne "\033]0;${USER}@${HOSTNAME%%.*}:${PWD/#$HOME/\~}\007"'
 		;;
 	screen*)
