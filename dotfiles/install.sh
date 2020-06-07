@@ -6,6 +6,7 @@ copy_dotfile()(
     local dotfile=$1
     [ "install.sh"  = "${dotfile}" ] && return 0
     [ ".config"     = "${dotfile}" ] && return 0
+    [ ".ssh"        = "${dotfile}" ] && return 0
     
     local target="${HOME}/${dotfile}"
     [ -e "${target}" ]                      && 
