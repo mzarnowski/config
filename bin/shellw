@@ -1,0 +1,21 @@
+#!/bin/bash
+
+[ -f "$1" ] || (echo "not a file $1" && exit 1)
+
+cache=~/.cache/shellw
+mkdir -p "$cache"
+
+source="$1"
+hash=$(echo "${source}" | md5sum | /bin/cut -f1 -d" ")
+cached="${cache}/${hash}"
+
+generate(){
+    shellw-tools generate "$source" "$cached" && chmod +x "$cached"
+}
+
+run()(
+	shift
+	"$cached" "$@"
+)
+
+([ "$cached" -nt "$source" ] || generate) && run "$@"

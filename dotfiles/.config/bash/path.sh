@@ -1,4 +1,3 @@
-PATH="${PATH}:${HOME}/opt/bin"
-
+PATH="${PATH}:${HOME}/bin"
 
 export PATH
