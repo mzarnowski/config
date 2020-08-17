@@ -1,3 +1,4 @@
 __init__.py
 
 dotfiles/.config/display/*-brightness
+dotfiles/.config/newsboat/cache.db
