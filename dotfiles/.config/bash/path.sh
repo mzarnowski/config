@@ -1,4 +1,3 @@
-PATH="${PATH}:${HOME}/opt/bin"
-PATH="$HOME/.cargo/bin:$PATH"
+PATH="${PATH}:${HOME}/bin"
 
 export PATH

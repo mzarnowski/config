@@ -1,0 +1,18 @@
+#!/usr/bin/shellw
+
+urls=~/.config/rss/urls
+home=~/.config/newsboat
+cache="${home}/cache.db"
+config="${home}/config"
+
+def {
+	newsboat --url-file "${urls}" --cache-file "${cache}" --config-file "${config}"
+}
+
+def "edit" {
+	$EDITOR "${urls}"
+}
+
+def "config" {
+	$EDITOR "${config}"
+}
