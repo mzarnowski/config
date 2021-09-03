@@ -33,10 +33,9 @@ DEFAULT='\e[m'
 # \h - host
 # \w - working dir
 
-gitref(){
-    git rev-parse --abbrev-ref HEAD 2> /dev/null
-}
+GIT_REF="\$(git rev-parse --abbrev-ref HEAD 2> /dev/null)"
 
-PROMPT_LINE_1="╭─|\A|${GREEN}\u${CYAN}@${GREEN}\h${DEFAULT}| ${BLUE}\w${DEFAULT} ${BYELLOW}\$(gitref)${DEFAULT}"
-PROMPT_LINE_2="╰─\$ "
-export PS1="${PROMPT_LINE_1}\n${PROMPT_LINE_2}"
+PROMPT_LINE_0="\$(printf "%0.s-" \$(seq 1 \$(tput cols)))"
+PROMPT_LINE_1="╭|\A|${GREEN}\u${CYAN}@${GREEN}\h${DEFAULT}| ${BLUE}\w${DEFAULT} ${BYELLOW}${GIT_REF}${DEFAULT}"
+PROMPT_LINE_2="╰\$ "
+export PS1="${PROMPT_LINE_0}\n${PROMPT_LINE_1}\n${PROMPT_LINE_2}"
