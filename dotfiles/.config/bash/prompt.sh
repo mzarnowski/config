@@ -27,15 +27,25 @@ WHITE='\e[0;37m'
 BWHITE='\e[1;37m'
 BGWHITE='\e[1;37m'
 DEFAULT='\e[m'
-
-# \A - date
-# \u - username
-# \h - host
-# \w - working dir
+GRAY_LIGHT='\e[0;37m'
+GRAY_DARK='\e[1;30m'
 
 GIT_REF="\$(git rev-parse --abbrev-ref HEAD 2> /dev/null)"
+TIME="\$(date +%H:%M)"
 
-PROMPT_LINE_0="\$(printf "%0.s-" \$(seq 1 \$(tput cols)))"
-PROMPT_LINE_1="╭|\A|${GREEN}\u${CYAN}@${GREEN}\h${DEFAULT}| ${BLUE}\w${DEFAULT} ${BYELLOW}${GIT_REF}${DEFAULT}"
-PROMPT_LINE_2="╰\$ "
-export PS1="${PROMPT_LINE_0}\n${PROMPT_LINE_1}\n${PROMPT_LINE_2}"
+DIRECTORY="${BLUE}\$(pwd) ${BYELLOW}${GIT_REF}${DEFAULT}"
+USER_AND_HOST="${GREEN}${USER}${CYAN}@${GREEN}${HOSTNAME}${DEFAULT}"
+
+LEN_SEP=7               # length of separators
+LEN_TIME=4              # hour + minutes
+LEN_PWD="\$(pwd             | wc -c)"
+LEN_GIT="\$(echo ${GIT_REF} | wc -c)"
+LEN_USR_INFO="\$(expr ${#USER} + ${#HOSTNAME})"
+LEN_DASH="\$(expr \$(tput cols) - ${LEN_TIME} - ${LEN_PWD} - ${LEN_GIT} - ${LEN_USR_INFO} - ${LEN_SEP})"
+
+DASHES="${GRAY_LIGHT}\$(printf "%0.s-" \$(seq 1 ${LEN_DASH}))${DEFAULT}"
+
+PROMPT_LINE_1="${TIME} ${DIRECTORY}  ${DASHES}  ${USER_AND_HOST}"
+PROMPT_LINE_2="\$ "
+export PS1="${PROMPT_LINE_1}\n${PROMPT_LINE_2}"
+
