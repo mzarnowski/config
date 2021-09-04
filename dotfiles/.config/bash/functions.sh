@@ -44,3 +44,11 @@ import(){
     local script=$1
     [ -f "${script}" ] && . "${script}"
 }
+
+run() {
+    [ -f "run.sh" ] && $0 run.sh $@ \
+        || read -p "Create run.sh? [y/N] " create_read_sh \
+        && [ "${create_read_sh^^}" == "Y" ] \
+        && echo $'#/bin/sh\n\nhelp(){\n    exit\n}\n\n[ -z "$@" ] && help \\\n  || type "$1" &> /dev/null && "$@" \\\n  || echo unknown command "$1"' > run.sh \
+        && chmod +x run.sh
+}
