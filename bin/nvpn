@@ -1,0 +1,28 @@
+#!/usr/bin/sh
+
+NVPN_ENDPOINT="https://nordvpn.com/wp-admin/admin-ajax.php?action=servers_recommendations"
+TYPE="tcp"
+
+host="$(curl GET "${NVPN_ENDPOINT}" 2> /dev/null | jq -r '.[0].hostname')"
+name="${host}.${TYPE}"
+file="/etc/openvpn/ovpn_${TYPE}/${name}.ovpn"
+
+if ! nmcli --fields name connection show | grep "${name}"
+then
+	nmcli connection import --temporary type openvpn file "${file}" \
+	 && nmcli connection modify "${name}" +vpn.data username="${USERNAME}" \
+	 && echo "imported ${name}"
+fi
+
+current=$(nmcli connection show --active | grep vpn | cut -d ' ' -f 1)
+
+if [ -z "$current" ]
+then
+	echo "${NVPN_PASSWD}" | nmcli connection up "${name}" -a
+elif ! echo "${current}" | grep "${name}"
+then
+	nmcli connection down "${current}" \
+	 && echo "${NVPN_PASSWD}" | nmcli connection up "${name}" -a
+else
+	echo "Connected to the recommended server"
+fi
