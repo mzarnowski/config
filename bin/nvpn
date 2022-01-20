@@ -10,7 +10,7 @@ file="/etc/openvpn/ovpn_${TYPE}/${name}.ovpn"
 if ! nmcli --fields name connection show | grep "${name}"
 then
 	nmcli connection import --temporary type openvpn file "${file}" \
-	 && nmcli connection modify "${name}" +vpn.data username="${USERNAME}" 
+	 && nmcli connection modify "${name}" +vpn.data username="${NVPN_USER}" 
 fi
 
 current=$(nmcli connection show --active | grep vpn | cut -d ' ' -f 1)
