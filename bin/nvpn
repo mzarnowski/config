@@ -7,21 +7,44 @@ host="$(curl GET "${NVPN_ENDPOINT}" 2> /dev/null | jq -r '.[0].hostname')"
 name="${host}.${TYPE}"
 file="/etc/openvpn/ovpn_${TYPE}/${name}.ovpn"
 
+con_import(){
+	file="$1"
+	nmcli con import --temporary type openvpn file "${file}"
+}
+
+con_modify(){
+	name=$1
+	property=$2
+	value=$3
+	nmcli con mod "${name}" "${property}" "${value}"
+}
+
+con_stop(){
+	name=$1
+	nmcli connection down "${name}"
+}
+
+con_start(){
+	name=$1
+	echo "${NVPN_PASSWD}" | nmcli connection up "${name}" -a
+}
+
 if ! nmcli --fields name connection show | grep "${name}"
 then
-	nmcli connection import --temporary type openvpn file "${file}" \
-	 && nmcli connection modify "${name}" +vpn.data username="${NVPN_USER}" 
+	con_import "${file}" \
+	&& con_modify "${name}" "vpn.persistent" 				 "yes" \
+	&& con_modify "${name}" "connection.autoconnect-retries" "0" \
+	&& con_modify "${name}" "+vpn.data" 					 "username=${NVPN_USER}"
 fi
 
 current=$(nmcli connection show --active | grep vpn | cut -d ' ' -f 1)
 
 if [ -z "$current" ]
 then
-	echo "${NVPN_PASSWD}" | nmcli connection up "${name}" -a
+	con_start "${name}"
 elif ! echo "${current}" | grep "${name}"
 then
-	nmcli connection down "${current}" \
-	 && echo "${NVPN_PASSWD}" | nmcli connection up "${name}" -a
+	con_stop "${current}" && con_start "${name}"
 else
 	echo "Connected to the recommended server"
 fi
