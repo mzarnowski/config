@@ -19,26 +19,27 @@ name="${host}.${type}"
 
 con_import(){
 	type=$1
-	name=$2
-	file="/etc/openvpn/ovpn_${type}/${name}.ovpn"
+	connection=$2
+	file="/etc/openvpn/ovpn_${type}/${connection}.ovpn"
 	nmcli con import --temporary type openvpn file "${file}"
 }
 
 con_modify(){
-	name=$1
+	connection=$1
 	property=$2
 	value=$3
-	nmcli con mod "${name}" "${property}" "${value}"
+	nmcli con mod "${connection}" "${property}" "${value}"
 }
 
 con_stop(){
-	name=$1
-	nmcli connection down "${name}"
+	connection=$1
+	nmcli con down "${connection}"
 }
 
 con_start(){
-	name=$1
-	echo "${NVPN_PASSWD}" | nmcli connection up "${name}" -a
+	connection=$1
+	echo "starting $name"
+	echo "${NVPN_PASSWD}" | nmcli con up "${connection}" -a
 }
 
 if ! nmcli --fields name connection show | grep "${name}"
@@ -49,13 +50,15 @@ then
 	&& con_modify "${name}" "+vpn.data" 					 "username=${NVPN_USER}"
 fi
 
-current=$(nmcli connection show --active | grep vpn | cut -d ' ' -f 1)
+current=$(nmcli con show --active | grep vpn | cut -d ' ' -f 1)
 
 if [ -z "$current" ]
 then
 	con_start "${name}"
 elif ! echo "${current}" | grep "${name}"
 then
+	echo "current: $current"
+	echo "next: $name"
 	con_stop "${current}" && con_start "${name}"
 else
 	echo "Connected to the recommended server"
