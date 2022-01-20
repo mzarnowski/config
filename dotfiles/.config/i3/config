@@ -112,7 +112,7 @@ set $ws8 "8"
 set $ws9 "9"
 set $ws10 "10"
 
-set $primary "VGA1"
+set $primary "HDMI-1"
 
 # switch to workspace
 bindsym $mod+Home		workspace $ws1
@@ -230,6 +230,7 @@ bar {
         workspace_buttons       yes
         tray_output             $primary
         tray_padding            0
+        font pango:FontAwesome5Free, FontAwesome5Brands, SymbolsNerdFont 12
         colors {
             background  #212121
             statusline  #DDDDDD
@@ -261,9 +262,6 @@ assign [class="Thunderbird"]            $ws10
 exec --no-startup-id nm-applet
 exec --no-startup-id udiskie -Nt2
 exec --no-startup-id redshift
-exec --no-startup-id dropbox
-exec --no-startup-id thunderbird
-exec --no-startup-id rambox
 exec --no-startup-id i3-msg "${ws1}; exec google-chrome-stable"
 exec --no-startup-id compton -f --config ~/.config/compton/compton.conf 
 exec --no-startup-id betterlockscreen -u /dropbox/reinstall/great_wpp/

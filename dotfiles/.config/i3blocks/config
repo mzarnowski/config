@@ -26,6 +26,12 @@ interval=60
 command=./iface.sh
 color=#00FF00
 
+[battery-plus]
+command=./battery.py
+markup=pango
+instance=BAT0
+interval=30
+
 [nm-vpn]
 label=VPN:
 command=./vpn.sh
