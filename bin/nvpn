@@ -1,5 +1,11 @@
 #!/usr/bin/sh
 
+##########
+## Docs ##
+##########
+## https://developer-old.gnome.org/NetworkManager/stable/settings-connection.html
+## https://developer-old.gnome.org/NetworkManager/stable/settings-vpn.html
+
 NVPN_ENDPOINT="https://nordvpn.com/wp-admin/admin-ajax.php?action=servers_recommendations"
 TYPE="tcp"
 
