@@ -1,1 +1,1 @@
-terminator thunderbird tmux unrar vim git maven dos2unix vlc downgrade wget bat i3-wm i3blocks i3status
+terminator thunderbird tmux unrar vim git maven dos2unix vlc downgrade wget bat i3-wm i3blocks i3status xbindkeys

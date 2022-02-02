@@ -260,6 +260,7 @@ assign [class="Rambox"]                 $ws10
 assign [class="Thunderbird"]            $ws10
 assign [class="Telegram"]               $ws10
 
+exec --no-startup-id xbindkeys -f $HOME/.xbindkeysrc
 exec --no-startup-id nm-applet
 exec --no-startup-id udiskie -Nt2
 exec --no-startup-id redshift
