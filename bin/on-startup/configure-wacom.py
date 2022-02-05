@@ -29,5 +29,4 @@ pad = devices["PAD"]
 shell(f"xsetwacom set {pad} Button 1 10")
 shell(f"xsetwacom set {pad} Button 2 11")
 shell(f"xsetwacom set {pad} Button 3 12")
-shell(f"xsetwacom set {pad} Button 8 13")
-
+shell(f"xsetwacom set {pad} Button 8 14")
