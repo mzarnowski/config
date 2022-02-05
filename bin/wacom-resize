@@ -1,0 +1,92 @@
+#!/usr/bin/env python3
+
+from tkinter import *
+import subprocess
+import re
+from collections import namedtuple
+
+Screen = namedtuple("Screen", ["name", "width", "height", "h_offset", "v_offset"])
+Device = namedtuple("Device", ["name", "id", "type"])
+Point = namedtuple("Point", ["x", "y"])
+
+def shell(command: str) -> str:
+	proc = subprocess.run(command, cwd=None, shell=True, capture_output=True)
+	if proc.returncode == 0:
+		return proc.stdout.decode("utf-8").strip()
+	else:
+		raise EnvironmentError(
+			f"The command [{command}]\nfailed with return code {proc.returncode}.\n"
+			f"stderr:\n{proc.stderr.decode('utf-8')}")
+
+def wacom_device(type: str) -> Device:
+	raw = shell("xsetwacom list devices")
+	for line in raw.split("\n"):
+		pattern = re.compile(r"(.*)\s+id: (\d+)\s+type: (\w+)")
+		matched = pattern.match(line)
+		if matched is None: continue
+		groups = matched.groups()
+		if groups[2] == type:
+			return Device(groups[0].strip(), groups[1], groups[2])
+
+def current_screen_position(root: Tk) -> (int, int):
+	x = root.winfo_pointerx() - root.winfo_rootx()
+	y = root.winfo_pointery() - root.winfo_rooty()
+	return (x, y)
+
+def all_screens():
+	pattern = re.compile(r"(\S+)[^\d]+(\d+)x(\d+)\+(\d+)\+(\d+)")
+	for line in shell("xrandr").split("\n"):
+		matched = pattern.match(line)
+		if matched is None: continue
+		g = matched.groups()
+		yield Screen(g[0], int(g[1]), int(g[2]), int(g[3]), int(g[4]))
+
+def current_screen(root: Tk) -> Screen:
+	(x, y) = current_screen_position(root)
+	for screen in all_screens():
+		min_x = screen.h_offset
+		max_x = min_x + screen.width
+		min_y = screen.v_offset
+		max_y = min_y + screen.height
+
+		x_in_bounds = min_x <= x and x <= max_x
+		y_in_bounds = min_y <= y and y <= max_y		
+
+		if x_in_bounds and y_in_bounds:
+			return screen
+
+class Listener(object):
+	def __init__(self, root, stylus):
+		self.root = root
+		self.stylus = stylus
+	
+	def on_press(self, event):
+		self.x = event.x
+		self.y = event.y
+
+	def on_release(self, event):
+		x0 = min(self.x, event.x)
+		y0 = min(self.y, event.y)
+		width = max(self.x, event.x) - x0
+		height = max(self.y, event.y) - y0
+		shell(f"xsetwacom -x set {self.stylus} MapToOutput {width}x{height}+{x0}+{y0}")
+		self.root.destroy()
+
+root = Tk()
+screen = current_screen(root)
+
+root.title("Select drawable region")
+root.attributes('-type', 'dialog') # to enable flowing in i3
+root.attributes('-alpha', 0.4)
+root.geometry(f"{screen.width}x{screen.height}")
+
+stylus = wacom_device("STYLUS")
+if stylus is not None:
+	listener = Listener(root, stylus.id)
+
+	root.bind("<Button-1>", listener.on_press)
+	root.bind("<ButtonRelease-1>", listener.on_release)
+
+	geometry = f"{screen.width}x{screen.height}+{screen.h_offset}+{screen.v_offset}"
+	shell(f"xsetwacom -x set {stylus.id} MapToOutput {geometry}")
+	root.mainloop()
