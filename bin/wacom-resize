@@ -28,6 +28,10 @@ def wacom_device(type: str) -> Device:
 		if groups[2] == type:
 			return Device(groups[0].strip(), groups[1], groups[2])
 
+def wacom_area_ratio(stylus) -> int:
+	(_, _, width, height) = shell(f"xsetwacom get {stylus} Area").split(" ")
+	return int(width) / int(height)
+
 def current_screen_position(root: Tk) -> (int, int):
 	x = root.winfo_pointerx() - root.winfo_rootx()
 	y = root.winfo_pointery() - root.winfo_rooty()
@@ -69,6 +73,15 @@ class Listener(object):
 		y0 = min(self.y, event.y)
 		width = max(self.x, event.x) - x0
 		height = max(self.y, event.y) - y0
+
+		ratio = wacom_area_ratio(self.stylus)
+
+		# adjust area to match wacom working area
+		if width / height < ratio:
+			width = int(height * ratio)
+		else:
+			height = int(width / ratio)
+
 		shell(f"xsetwacom -x set {self.stylus} MapToOutput {width}x{height}+{x0}+{y0}")
 		self.root.destroy()
 
