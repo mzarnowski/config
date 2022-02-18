@@ -258,6 +258,7 @@ assign [class="Steam"]                  $ws3
 assign [class="Rambox"]                 $ws10
 assign [class="Telegram"]               $ws4
 assign [class="Thunderbird"]            $ws10
+assign [class="Telegram"]               $ws10
 
 exec --no-startup-id nm-applet
 exec --no-startup-id udiskie -Nt2
@@ -270,5 +271,10 @@ exec --no-startup-id i3-msg "${ws1}; exec google-chrome-stable"
 exec --no-startup-id compton -f --config ~/.config/compton/compton.conf 
 exec --no-startup-id betterlockscreen -u /dropbox/reinstall/great_wpp/
 exec_always --no-startup-id feh --bg-scale --randomize /dropbox/reinstall/great_wpp/
+
+# Enable window transparency
+exec --no-startup-id picom -CGb
+
+
 # list open windows to switch to
 bindsym $alt+Tab exec "rofi -show-icons -show window"

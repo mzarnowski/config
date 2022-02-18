@@ -9,7 +9,7 @@ copy_dotfile()(
     [ ".ssh"        = "${dotfile}" ] && return 0
     
     local target="${HOME}/${dotfile}"
-    [ -e "${target}" ] && return 0
+    [ -e "${target}" ] && echo "Skipping $target" && return 0
     
     ln -s "${dotdir}/${dotfile}" "${target}" && echo "installed ${dotfile}"
 )

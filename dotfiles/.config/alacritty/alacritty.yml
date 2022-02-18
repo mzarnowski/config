@@ -58,7 +58,7 @@ cursor:
   #vi_mode_style: None
 
 mouse:
-  url:
+  urls:
     modifiers: Control
 
 

@@ -1,0 +1,65 @@
+#!/usr/bin/sh
+
+##########
+## Docs ##
+##########
+## https://developer-old.gnome.org/NetworkManager/stable/settings-connection.html
+## https://developer-old.gnome.org/NetworkManager/stable/settings-vpn.html
+
+NVPN_ENDPOINT="https://nordvpn.com/wp-admin/admin-ajax.php?action=servers_recommendations"
+
+type="${1:-tcp}"
+case $type in
+	tcp|udp );;
+	*		) echo "invalid type: ${type}" && exit 1;;
+esac
+
+host="$(curl GET "${NVPN_ENDPOINT}" 2> /dev/null | jq -r '.[0].hostname')"
+name="${host}.${type}"
+
+con_import(){
+	type=$1
+	connection=$2
+	file="/etc/openvpn/ovpn_${type}/${connection}.ovpn"
+	nmcli con import --temporary type openvpn file "${file}"
+}
+
+con_modify(){
+	connection=$1
+	property=$2
+	value=$3
+	nmcli con mod "${connection}" "${property}" "${value}"
+}
+
+con_stop(){
+	connection=$1
+	nmcli con down "${connection}"
+}
+
+con_start(){
+	connection=$1
+	echo "starting $name"
+	echo "${NVPN_PASSWD}" | nmcli con up "${connection}" -a
+}
+
+if ! nmcli --fields name connection show | grep "${name}"
+then
+	con_import "${type}" "${name}" \
+	&& con_modify "${name}" "vpn.persistent" 				 "yes" \
+	&& con_modify "${name}" "connection.autoconnect-retries" "0" \
+	&& con_modify "${name}" "+vpn.data" 					 "username=${NVPN_USER}"
+fi
+
+current=$(nmcli con show --active | grep vpn | cut -d ' ' -f 1)
+
+if [ -z "$current" ]
+then
+	con_start "${name}"
+elif ! echo "${current}" | grep "${name}"
+then
+	echo "current: $current"
+	echo "next: $name"
+	con_stop "${current}" && con_start "${name}"
+else
+	echo "Connected to the recommended server"
+fi
