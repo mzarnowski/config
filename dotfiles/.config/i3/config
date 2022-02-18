@@ -112,8 +112,8 @@ set $ws8 "8"
 set $ws9 "9"
 set $ws10 "10"
 
-set $primary "DVI-I-1"
-
+set $primary    "HDMI-0"
+set $secondary  "DVI-I-1"
 # switch to workspace
 bindsym $mod+Home		workspace $ws1
 bindsym $mod+Prior		workspace prev
@@ -137,9 +137,9 @@ workspace $ws2  output $primary
 workspace $ws3  output $primary
 workspace $ws10 output $primary
 
-workspace $ws4 output DVI-D-0
-workspace $ws5 output DVI-D-0
-workspace $ws6 output DVI-D-0
+workspace $ws4 output $secondary
+workspace $ws5 output $secondary
+workspace $ws6 output $secondary
 
 # move focused container to workspace
 bindsym $mod+Shift+Home	    move container to workspace $ws1
@@ -253,8 +253,10 @@ for_window [class="Shutter"]            floating enable
 for_window [title="Android Emulator.*"] floating enable
 
 assign [class="jetbrains-idea"]         $ws2
-assign [class="jetbrains-studio"]       $ws2
+assign [class="Steam"]                  $ws3
+# assign [class="jetbrains-studio"]       $ws2
 assign [class="Rambox"]                 $ws10
+assign [class="Telegram"]               $ws4
 assign [class="Thunderbird"]            $ws10
 
 exec --no-startup-id nm-applet
@@ -263,6 +265,7 @@ exec --no-startup-id redshift
 exec --no-startup-id dropbox
 exec --no-startup-id thunderbird
 exec --no-startup-id rambox
+exec --no-startup-id autorandr --change
 exec --no-startup-id i3-msg "${ws1}; exec google-chrome-stable"
 exec --no-startup-id compton -f --config ~/.config/compton/compton.conf 
 exec --no-startup-id betterlockscreen -u /dropbox/reinstall/great_wpp/
