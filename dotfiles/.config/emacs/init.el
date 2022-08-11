@@ -31,6 +31,7 @@
 (configure "rainbow-delimiters")
 (configure "which-key") ;; prompt with available key sequence continuations
 (configure "http-server")
+(configure "treemacs")
 
 ;; jump to recent files using: M-x recentf-open-files
 (recentf-mode t)
