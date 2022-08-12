@@ -1,3 +1,5 @@
+(setq confirm-kill-emacs 'yes-or-no-p)
+
 (setq inhibit-startup-screen t)
 (setq inhibit-startup-message t)
 
