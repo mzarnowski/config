@@ -27,6 +27,7 @@
 ;; extensions
 (configure "helpful") ;; better contextual information
 (configure "vertico") ;; completion
+(configure "avy")
 (configure "ace-window") ;; navigate between windows
 (configure "rainbow-delimiters")
 (configure "which-key") ;; prompt with available key sequence continuations
