@@ -4,7 +4,15 @@
   :custom
   (vertico-cycle t)
   :config
-  (use-package embark)
+  (use-package embark
+    :bind
+    (("C-."    . embark-act     )
+     ("<menu>" . embark-act     )
+     ("C->"    . embark-become  )
+     ("M-."    . embark-dwim    )
+     ("C-h B"  . embark-bindings))
+    :init
+    (setq prefix-help-command #'embark-prefix-help-command))
   (use-package savehist
     :init
     (savehist-mode)

@@ -32,6 +32,7 @@
 (configure "which-key") ;; prompt with available key sequence continuations
 (configure "http-server")
 (configure "treemacs")
+(configure "embark")
 
 ;; jump to recent files using: M-x recentf-open-files
 (recentf-mode t)
