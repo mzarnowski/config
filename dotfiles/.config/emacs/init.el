@@ -35,8 +35,9 @@
 (configure "treemacs")
 (configure "embark")
 
-;; jump to recent files using: M-x recentf-open-files
-(recentf-mode t)
+(use-package recentf
+  :init
+  (recentf-mode))
 
 ;; remember last place when opening a file again
 (save-place-mode t)
