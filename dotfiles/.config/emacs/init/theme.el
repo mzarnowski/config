@@ -16,3 +16,7 @@
     (load-theme other-theme)))
 
 (global-set-key [f5] 'toggle-theme)
+
+;; TODO consider themes
+;; dark : melancholy-theme
+;; light: ample-theme
