@@ -35,6 +35,7 @@
     (auto-package-update-maybe))
 #+END_SRC
 
+
 * UI
 
 *** Theme
@@ -53,7 +54,7 @@
   (defun toggle-theme ()
     (interactive)
     (let* ((day   'leuven)
-           (night 'leuven-dark)	 
+           (night 'leuven-dark)
            (is-day (eq (car custom-enabled-themes) day))
            (other-theme (if is-day night day)))
       (load-theme other-theme)))
@@ -68,6 +69,7 @@
   - doom-1337
 - melancholy-theme
 - ample-theme
+- zenburn
 
 *** Frames
 
@@ -135,6 +137,7 @@ Let's have the clean buffers
 #+BEGIN_SRC emacs-lisp
   (column-number-mode)
 #+END_SRC
+
 
 * Version Control
 
@@ -328,6 +331,7 @@ to jump to any visible character directly
   (save-place-mode t)
 #+END_SRC
 
+
 ** Remember recently opened files
 
 #+BEGIN_SRC emacs-lisp
@@ -433,6 +437,7 @@ to jump to any visible character directly
     (org-roam-setup))
 
 #+END_SRC
+
 * Potentially interesting packages
 
 ** TODO epub: [[https://depp.brause.cc/nov.el/][nov]] and [[https://github.com/chenyanming/nov-xwidget][nov-xwidget]] 
@@ -442,6 +447,8 @@ to jump to any visible character directly
 ** TODO modal: [[https://github.com/Kungsgeten/ryo-modal][ryo-modal]]
 
 ** TODO completions: [[https://github.com/oantolin/orderless][orderless]]
+
+
 
 * Potentially interesting topics
 
