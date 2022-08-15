@@ -47,8 +47,12 @@
 
 #+BEGIN_SRC emacs-lisp
   (use-package leuven-theme)
-  (load-theme 'leuven)
-  (load-theme 'leuven-dark)
+  (use-package zenburn-theme)
+  (setq init/theme-day   'leuven
+        init/theme-night 'zenburn)
+
+  (load-theme init/theme-day)
+  (load-theme init/theme-night)
 #+END_SRC
 
 
@@ -57,11 +61,9 @@
 #+BEGIN_SRC emacs-lisp
   (defun toggle-theme ()
     (interactive)
-    (let* ((day   'leuven)
-           (night 'leuven-dark)
-           (is-day (eq (car custom-enabled-themes) day))
-           (this-theme  (if is-day day night))
-           (other-theme (if is-day night day)))
+    (let* ((is-day (eq (car custom-enabled-themes) init/theme-day))
+           (this-theme  (if is-day init/theme-day   init/theme-night))
+           (other-theme (if is-day init/theme-night init/theme-day)))
       (disable-theme this-theme)
       (enable-theme  other-theme)))
 
