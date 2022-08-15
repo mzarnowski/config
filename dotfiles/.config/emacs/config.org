@@ -1,0 +1,449 @@
+* Package Management
+
+** Configure package sources
+#+BEGIN_SRC emacs-lisp
+  (require 'package)
+  (setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                           ("elpa"  . "https://elpa.gnu.org/packages/")))
+#+END_SRC
+
+** Initalize pacakge system
+#+BEGIN_SRC emacs-lisp
+  (package-initialize) 
+  (unless package-archive-contents
+          (package-refresh-contents))
+#+END_SRC
+
+** Install package managing the packages
+#+BEGIN_SRC emacs-lisp
+  (unless (package-installed-p 'use-package)
+          (package-install     'use-package))
+
+  (require 'use-package)
+  (setq use-package-always-ensure t)
+#+END_SRC
+
+** Configure auto-update of packages
+
+#+BEGIN_SRC emacs-lisp
+  (use-package auto-package-update
+    :custom
+    (auto-package-update-interval             7)
+    (auto-package-update-prompt-before-update t)
+    (auto-package-update-hide-results         t)
+    :config
+    (auto-package-update-maybe))
+#+END_SRC
+
+* UI
+
+*** Theme
+
+**** Install and load themes
+
+#+BEGIN_SRC emacs-lisp
+  (use-package leuven-theme)
+  (load-theme 'leuven)
+  (load-theme 'leuven-dark)
+#+END_SRC
+
+**** Configure toggling the theme on <f5>
+
+#+BEGIN_SRC emacs-lisp
+  (defun toggle-theme ()
+    (interactive)
+    (let* ((day   'leuven)
+           (night 'leuven-dark)	 
+           (is-day (eq (car custom-enabled-themes) day))
+           (other-theme (if is-day night day)))
+      (load-theme other-theme)))
+
+  (global-set-key [f5] 'toggle-theme)
+#+END_SRC
+
+**** Other themes to consider
+- doom-themes
+  - doom-one-light
+  - doom-palenight
+  - doom-1337
+- melancholy-theme
+- ample-theme
+
+*** Frames
+
+**** Disable various bars  
+#+BEGIN_SRC emacs-lisp
+  (tool-bar-mode   -1)
+  (menu-bar-mode   -1)
+  (scroll-bar-mode -1)
+  (tooltip-mode    -1)
+#+END_SRC
+
+*** Windows
+
+**** Enable window padding on left and right
+Sadly, this doesn't seem to work in terminal
+#+BEGIN_SRC emacs-lisp
+  (set-fringe-mode 16)
+#+END_SRC
+
+*** Buffers
+
+**** Show line numbers
+
+Additionally, there is a small function to disable the
+line numbers in some modes (e.g. dired / eshell)
+
+#+BEGIN_SRC emacs-lisp
+  (global-display-line-numbers-mode t)
+
+  (defun init/disable-line-numbers (mode)
+    (add-hook mode (lambda () (display-line-numbers-mode 0))))
+#+END_SRC
+
+**** Auto-reload externally modified buffers
+
+#+BEGIN_SRC emacs-lisp
+  (global-auto-revert-mode t)
+#+END_SRC
+
+**** Configure tabulations
+
+#+BEGIN_SRC emacs-lisp
+  (setq tab-width 2)
+#+END_SRC
+
+**** Global Fonts
+
+#+BEGIN_SRC emacs-lisp
+  (set-face-attribute 'default nil :font "Hack" :height 210)
+#+END_SRC
+
+**** Disable startup messages
+
+Let's have the clean buffers
+
+#+BEGIN_SRC emacs-lisp
+  (setq inhibit-startup-screen t)
+  (setq inhibit-startup-message t)
+#+END_SRC
+
+*** Mode line
+
+**** Show column of the point
+
+#+BEGIN_SRC emacs-lisp
+  (column-number-mode)
+#+END_SRC
+
+* Version Control
+
+** Disable built-in version control module
+
+#+BEGIN_SRC emacs-lisp
+  ;; disable default vc-mode
+  (setq vc-handled-backends nil)
+  (require 'vc)
+  (eval-after-load "vc" '(remove-hook 'find-file-hook 'vc-find-file-hook))
+  (eval-after-load "vc" '(remove-hook 'find-file-hook 'vc-refresh-state))
+#+END_SRC
+
+** Enable magit
+
+#+BEGIN_SRC emacs-lisp
+  (use-package magit)
+#+END_SRC
+
+
+* User experience
+
+** Configure file backups
+
+#+BEGIN_SRC emacs-lisp
+  (setq backup-directory-alist `(("." . "~/.local/emacs/backup")))
+  (setq backup-by-copying-when-linked t)
+
+  (setq delete-old-versions t)
+  (setq kept-new-versions   6)
+  (setq kept-old-versions   2)
+  (setq version-control     t)
+#+END_SRC
+
+
+** Require confirmation before quitting
+
+#+BEGIN_SRC emacs-lisp
+  (setq confirm-kill-emacs 'y-or-n-p)
+#+END_SRC
+
+
+** Easier confirmation of destructive actions
+
+#+BEGIN_SRC emacs-lisp
+  (defalias 'yes-or-no-p 'y-or-n-p)
+#+END_SRC
+
+
+** Disable suspending frames
+
+#+BEGIN_SRC emacs-lisp
+  (put 'suspend-frame 'disabled t)
+#+END_SRC
+
+
+** Disable disruptive or unused keybindings
+
+#+BEGIN_SRC emacs-lisp
+  ;; disable suspending frames
+  (global-unset-key (kbd "C-z"))
+  (global-unset-key (kbd "C-x C-z"))
+#+END_SRC
+
+
+** TODO Simplify operating on S-expr
+
+#+BEGIN_SRC emacs-lisp :tangle no
+(use-package paredit
+  :hook emacs-lisp-mode)
+#+END_SRC
+
+
+** Optionally log executed commands in a separate window
+
+#+BEGIN_SRC emacs-lisp
+  ;; Show command log using "C-c o"
+  (use-package command-log-mode)
+#+END_SRC
+
+
+** User-friendly minibuffer
+
+#+BEGIN_SRC emacs-lisp
+  (use-package vertico
+    :init
+    (vertico-mode)
+    :custom
+    (vertico-cycle t)
+    :config
+    (use-package embark ;; mini-buffer actions
+      :bind
+      (("C-."    . embark-act     )
+       ("<menu>" . embark-act     )
+       ("C->"    . embark-become  )
+       ("M-."    . embark-dwim    )
+       ("C-h B"  . embark-bindings))
+      :init
+      (setq prefix-help-command #'embark-prefix-help-command))
+    (use-package savehist ;; remembers previous commands
+      :init
+      (savehist-mode)
+      :config
+      (setq history-length 256))
+    (use-package marginalia ;; provides more contextual info
+      :init
+      (marginalia-mode)))
+#+END_SRC
+
+
+** Colorful parenthesis
+
+#+BEGIN_SRC emacs-lisp
+  (use-package rainbow-delimiters
+    :hook (prog-mode . rainbow-delimiters-mode))
+#+END_SRC
+
+
+** Expandable directory tree window
+
+#+BEGIN_SRC emacs-lisp
+  (use-package treemacs
+    :defer t
+    :config
+    (init/disable-line-numbers 'treemacs-mode-hook)
+    (setq treemacs-select-when-already-in-treemacs 'close)
+    (general-define-key "M-1"  'treemacs-select-window))
+#+END_SRC
+
+
+** Better help
+
+The *helpful* package describes various symbols much 
+better than the vanilla package.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package helpful
+    :commands (helpful-callable helpful-variable helpful-command helpful-key)
+    :config
+    (general-define-key "C-h C-h" 'helpful-at-point)
+    :bind
+    ([remap describe-function] . helpful-callable)
+    ([remap describe-variable] . helpful-variable)
+    ([remap describe-command ] . helpful-command )
+    ([remap describe-symbol  ] . helpful-symbol  )					  
+    ([remap describe-key     ] . helpful-key     ))
+#+END_SRC
+
+The *which-key* package show a pop-up window with available 
+continuations of the current key stroke chain.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package which-key
+    :diminish which-key-mode
+    :config
+    (setq which-key-idle-delay 0.3))
+
+  (which-key-mode) ; for some reason, this doesn't work in :init block of use-pacakge
+#+END_SRC
+
+
+** Navigation
+
+The *ace-window* package provides an easy way
+to jump to any visible window directly
+
+#+BEGIN_SRC emacs-lisp
+(use-package ace-window
+  :config
+  (global-set-key (kbd "C-x o") 'ace-window))
+#+END_SRC
+
+The *avy* package provides an easy way
+to jump to any visible character directly
+
+#+BEGIN_SRC emacs-lisp
+  (use-package avy
+    :config
+    (global-set-key (kbd "C-;") 'avy-goto-char))
+#+END_SRC
+
+
+** Remember point position in file
+
+#+BEGIN_QUOTE 
+  When you visit a file, point goes to the last place
+  where it was when you previously visited the same file.
+#+END_QUOTE
+
+#+BEGIN_SRC emacs-lisp
+  (save-place-mode t)
+#+END_SRC
+
+** Remember recently opened files
+
+#+BEGIN_SRC emacs-lisp
+(use-package recentf
+  :init
+  (recentf-mode))
+#+END_SRC
+
+
+* Modes
+** dired-mode
+
+#+BEGIN_SRC emacs-lisp
+  (use-package dired
+    :ensure nil ; not to be downloaded
+    :commands (dired dired-jump)
+    :custom
+    (dired-listing-switches "-agho --group-directories-first")
+    :config
+    (use-package dired-single) ;; reuse dired buffer
+    (define-key dired-mode-map [remap dired-find-file] 'dired-single-buffer)
+    (define-key dired-mode-map [remap dired-mouse-find-file-other-window] 'dired-single-buffer-mouse)
+    (define-key dired-mode-map [remap dired-up-directory] 'dired-single-up-directory)
+    (use-package treemacs-icons-dired 
+      :if (display-graphic-p)
+      :hook (dired-mode . treemacs-icons-dired-mode))
+    (use-package dired-collapse ;; collapse directories with only one child into e.g. foo/bar/baz.txt
+      :hook (dired-mode . dired-collapse-mode)))
+#+END_SRC
+
+
+*** TODO hide dotfiles
+
+#+BEGIN_SRC emacs-lisp :tangle no
+(use-package dired-hide-dotfiles
+  :hook (dired-mode . dired-hide-dotfiles-mode))
+#+END_SRC
+
+*** TODO open files externally
+
+#+BEGIN_SRC emacs-lisp :tangle no
+(use-package dired-open
+  :config
+  (setq dired-open-extensions '(("mkv" . "mpv"))))
+(set-face-attribute 'default nil :font "Hack" :height 300)
+
+#+END_SRC
+
+
+** various term modes
+
+*** Disable line numbers in term modes
+
+#+BEGIN_SRC emacs-lisp
+  (init/disable-line-numbers 'term-mode-hook)
+  (init/disable-line-numbers 'vterm-mode-hook)
+  (init/disable-line-numbers 'shell-mode-hook)
+  (init/disable-line-numbers 'eshell-mode-hook)
+#+END_SRC 
+
+*** Install v-term
+
+#+BEGIN_SRC emacs-lisp
+  (use-package vterm
+    :commands vterm
+    :config
+    (setq vterm-max-scrollback 10000))
+#+END_SRC 
+
+
+** org-mode
+
+#+BEGIN_SRC emacs-lisp
+  (use-package org
+    :config
+    (setq org-hide-emphasis-markers      t)
+    (setq org-startup-indented           t)
+    (setq org-pretty-entities            t)
+    (setq org-hide-emphasis-markers      t)
+    (setq org-startup-with-inline-images t)
+    (use-package org-superstar ;; nicer bullets
+      :config
+      (setq org-superstar-special-todo-items t)
+      :hook org-mode-hook)
+    (use-package org-appear ;; Show hidden emphasis markers
+      :hook (org-mode . org-appear-mode))
+    )
+#+END_SRC 
+
+*** org-roam
+
+#+BEGIN_SRC emacs-lisp
+  (use-package org-roam
+    :custom
+    (org-roam-directory "~/workspace/mzarnowski/notes")
+    (org-node-completions-everywhere t)
+    :bind
+    (("C-c n f" . org-roam-node-find    )
+     ("C-c n i" . org-roam-node-insert  )
+     ("C-c n l" . org-roam-buffer-toggle))
+    :config
+    (setq org-return-follows-link t)
+    (org-roam-setup))
+
+#+END_SRC
+* Potentially interesting packages
+
+** TODO epub: [[https://depp.brause.cc/nov.el/][nov]] and [[https://github.com/chenyanming/nov-xwidget][nov-xwidget]] 
+
+** TODO pdf: [[https://github.com/vedang/pdf-tools][pdf-tools]]
+
+** TODO modal: [[https://github.com/Kungsgeten/ryo-modal][ryo-modal]]
+
+** TODO completions: [[https://github.com/oantolin/orderless][orderless]]
+
+* Potentially interesting topics
+
+** TODO [[http://endlessparentheses.com/fill-and-unfill-paragraphs-with-a-single-key.html?source=rss][Fill-paragraph]]
+** TODO [[http://fgiasson.com/blog/index.php/2016/05/30/creating-and-running-unit-tests-directly-in-source-files-with-org-mode/][Unit tests in org-mode]]

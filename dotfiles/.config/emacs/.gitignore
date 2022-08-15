@@ -1,5 +1,4 @@
 *
 
 !init.el
-!init/
-!init/*.el
+!config.org
