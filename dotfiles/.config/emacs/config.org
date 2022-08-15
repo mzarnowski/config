@@ -402,6 +402,15 @@ The *[[https://github.com/magnars/s.el][s]]* library simplifies working with str
 #+END_SRC
 
 
+** file operations
+
+The *[[https://github.com/rejeep/f.el][f]]* library simplifies working with files (e.g. =f-read-text= or =f-ext=)
+
+#+BEGIN_SRC emacs-lisp
+  (use-package f)
+#+END_SRC
+
+
 * Modes
 
 ** dired-mode
