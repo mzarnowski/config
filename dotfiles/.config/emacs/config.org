@@ -350,7 +350,28 @@ to jump to any visible character directly
     (completion-category-overrides '((file (styles basic partial-completion)))))
 #+END_SRC
 
+
+* Elisp
+
+** list operations
+
+The *[[https://github.com/magnars/dash.el][dash]]* library simplifies working with lists (e.g. =--map= or =--filter= functions)
+
+#+BEGIN_SRC emacs-lisp
+  (use-package dash)
+#+END_SRC
+
+** string operations
+
+The *[[https://github.com/magnars/s.el][s]]* library simplifies working with strings (e.g. =s-trim= or =s-pad-left= functions)
+
+#+BEGIN_SRC emacs-lisp
+  (use-package s)
+#+END_SRC
+
+
 * Modes
+
 ** dired-mode
 
 #+BEGIN_SRC emacs-lisp
@@ -446,6 +467,7 @@ to jump to any visible character directly
     (org-roam-setup))
 
 #+END_SRC
+
 
 * Potentially interesting packages
 
