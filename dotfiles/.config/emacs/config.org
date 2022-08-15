@@ -138,6 +138,11 @@ Let's have the clean buffers
   (column-number-mode)
 #+END_SRC
 
+**** Hide minor mode on mode line
+
+#+BEGIN_SRC emacs-lisp
+  (use-package diminish)
+#+END_SRC
 
 * Version Control
 
