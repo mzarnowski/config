@@ -341,6 +341,15 @@ to jump to any visible character directly
 #+END_SRC
 
 
+** Space separated completions
+
+#+BEGIN_SRC emacs-lisp
+  (use-package orderless
+    :custom
+    (completion-styles '(orderless basic))
+    (completion-category-overrides '((file (styles basic partial-completion)))))
+#+END_SRC
+
 * Modes
 ** dired-mode
 
@@ -445,8 +454,6 @@ to jump to any visible character directly
 ** TODO pdf: [[https://github.com/vedang/pdf-tools][pdf-tools]]
 
 ** TODO modal: [[https://github.com/Kungsgeten/ryo-modal][ryo-modal]]
-
-** TODO completions: [[https://github.com/oantolin/orderless][orderless]]
 
 
 
