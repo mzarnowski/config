@@ -218,6 +218,12 @@ Let's have the clean buffers
 ** TODO Simplify operating on S-expr
 
 #+BEGIN_SRC emacs-lisp :tangle no
+  (use-package smartparens)
+#+END_SRC
+
+or
+
+#+BEGIN_SRC emacs-lisp :tangle no
 (use-package paredit
   :hook emacs-lisp-mode)
 #+END_SRC
