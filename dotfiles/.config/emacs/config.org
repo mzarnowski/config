@@ -486,18 +486,19 @@ The *[[https://github.com/rejeep/f.el][f]]* library simplifies working with file
     (use-package org-superstar ;; nicer bullets
       :config
       (setq org-superstar-special-todo-items t)
-      :hook org-mode-hook)
+      :hook
+      (org-mode . org-superstar-mode))
     (use-package org-appear ;; Show hidden emphasis markers
-      :hook (org-mode . org-appear-mode))
-    )
-#+END_SRC 
+      :hook
+      (org-mode . org-appear-mode)))
+#+END_SRC
 
 *** org-roam
 
 #+BEGIN_SRC emacs-lisp
   (use-package org-roam
     :custom
-    (org-roam-directory "~/workspace/mzarnowski/notes")
+    (org-roam-directory "~/workspace/mzarnowski/org/notes")
     (org-node-completions-everywhere t)
     :bind
     (("C-c n f" . org-roam-node-find    )
@@ -506,7 +507,6 @@ The *[[https://github.com/rejeep/f.el][f]]* library simplifies working with file
     :config
     (setq org-return-follows-link t)
     (org-roam-setup))
-
 #+END_SRC
 
 
