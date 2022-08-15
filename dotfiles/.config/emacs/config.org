@@ -78,6 +78,8 @@
   - doom-one-light
   - doom-palenight
   - doom-1337
+  - doom-Iosvkem
+  - doom-monlight
 - melancholy-theme
 - ample-theme
 - zenburn
