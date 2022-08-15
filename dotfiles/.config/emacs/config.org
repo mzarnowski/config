@@ -89,6 +89,7 @@ Sadly, this doesn't seem to work in terminal
   (set-fringe-mode 16)
 #+END_SRC
 
+
 *** Buffers
 
 **** Show line numbers
@@ -144,6 +145,7 @@ Let's have the clean buffers
   (use-package diminish)
 #+END_SRC
 
+
 * Version Control
 
 ** Disable built-in version control module
@@ -156,14 +158,19 @@ Let's have the clean buffers
   (eval-after-load "vc" '(remove-hook 'find-file-hook 'vc-refresh-state))
 #+END_SRC
 
+
 ** Enable magit
 
 #+BEGIN_SRC emacs-lisp
-  (use-package magit)
+  (use-package magit
+    :config
+    (use-package git-gutter-fringe) ;; TODO icons are quite small
+    (git-gutter-mode))
 #+END_SRC
 
 
 * User experience
+
 
 ** Configure file backups
 
