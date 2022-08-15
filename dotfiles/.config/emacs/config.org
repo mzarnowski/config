@@ -512,7 +512,7 @@ The *[[https://github.com/rejeep/f.el][f]]* library simplifies working with file
 
 * Potentially interesting packages
 
-** TODO epub: [[https://depp.brause.cc/nov.el/][nov]] and [[https://github.com/chenyanming/nov-xwidget][nov-xwidget]] 
+** TODO epub: [[https://depp.brause.cc/nov.el/][nov]] and [[https://github.com/chenyanming/nov-xwidget][nov-xwidget]]
 
 ** TODO pdf: [[https://github.com/vedang/pdf-tools][pdf-tools]]
 
