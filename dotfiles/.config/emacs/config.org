@@ -60,8 +60,10 @@
     (let* ((day   'leuven)
            (night 'leuven-dark)
            (is-day (eq (car custom-enabled-themes) day))
+           (this-theme  (if is-day day night))
            (other-theme (if is-day night day)))
-      (load-theme other-theme)))
+      (disable-theme this-theme)
+      (enable-theme  other-theme)))
 
   (global-set-key [f5] 'toggle-theme)
 #+END_SRC
