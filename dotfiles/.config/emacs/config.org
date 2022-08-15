@@ -382,6 +382,13 @@ to jump to any visible character directly
 #+END_SRC
 
 
+** English Dictionary at hand
+
+#+BEGIN_SRC emacs-lisp
+  (use-package mw-thesaurus
+    :bind ("C-h w" . #'mw-thesaurus-lookup-dwim))
+#+END_SRC
+
 * Elisp
 
 ** list operations
