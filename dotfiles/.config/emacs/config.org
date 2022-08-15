@@ -51,6 +51,8 @@
   (setq init/theme-day   'leuven
         init/theme-night 'zenburn)
 
+  (setq zenburn-scale-org-headlines t)
+
   (load-theme init/theme-day)
   (disable-theme init/theme-day)
 
