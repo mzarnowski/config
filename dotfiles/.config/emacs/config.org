@@ -482,6 +482,7 @@ The *[[https://github.com/magnars/s.el][s]]* library simplifies working with str
 
 ** TODO modal: [[https://github.com/Kungsgeten/ryo-modal][ryo-modal]]
 
+** TODO better buffer-window [[https://www.emacswiki.org/emacs/IbufferMode][Ibuffer]] and [[https://github.com/purcell/ibuffer-vc][Ibuffer-vc]]
 
 
 * Potentially interesting topics
