@@ -500,6 +500,7 @@ The *[[https://github.com/rejeep/f.el][f]]* library simplifies working with file
 
 #+BEGIN_SRC emacs-lisp
   (use-package org
+    :bind ("C-<tab>" . 'org-hide-entry)
     :config
     (setq org-hide-emphasis-markers      t)
     (setq org-startup-indented           t)
