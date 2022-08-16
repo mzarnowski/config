@@ -46,34 +46,41 @@
 **** Install and load themes
 
 #+BEGIN_SRC emacs-lisp
-  (use-package leuven-theme)
-  (use-package zenburn-theme)
-  (setq init/theme-day   'leuven
-        init/theme-night 'zenburn)
-
-  (setq zenburn-scale-org-headlines t)
-
-  (load-theme init/theme-day)
-  (disable-theme init/theme-day)
-
-  (load-theme init/theme-night)
+  (use-package modus-themes
+    :init
+    (setq modus-themes-org-blocks        'gray-background
+          modus-themes-bold-constructs   t
+          modus-themes-italic-constructs t
+          modus-themes-fringes           'subtle
+          modus-themes-hl-line           '(intense)
+          modus-themes-paren-match       '(bold intense)
+          modus-themes-mode-line         '(accented)
+          modus-themes-syntax            '(faint green-strings alt-syntax)
+          modus-themes-region            '(accented)
+          modus-themes-subtle-line-numbers nil
+          modus-themes-mixed-fonts         nil
+          modus-themes-prompts  '(intense background) ;; minibuffer prompts
+          modus-themes-markup   '(intense background) ;; e.g. =verbatim= or ~code~
+          modus-themes-links    '(faint italic background))
+    (setq modus-themes-headings
+          '((1 . (overline rainbow variable-pitch 1.7))
+            (2 . (overline rainbow variable-pitch 1.5))
+            (3 . (overline rainbow 1.3))
+            (4 . (overline rainbow 1.1))
+            (t . (monochrome))))
+    (setq modus-themes-completions
+          '((matches   . (extrabold background ))
+            (selection . (semibold accented ))
+            (popup     . (accented))))
+    :config
+    (load-theme 'modus-operandi t)
+    (load-theme 'modus-vivendi  t)
+    :bind ("<f5>" . modus-themes-toggle))
 #+END_SRC
 
-
-**** Configure toggling the theme on <f5>
-
-#+BEGIN_SRC emacs-lisp
-  (defun toggle-theme ()
-    (interactive)
-    (let* ((is-day (eq (car custom-enabled-themes) init/theme-day))
-           (this-theme  (if is-day init/theme-day   init/theme-night))
-           (other-theme (if is-day init/theme-night init/theme-day)))
-      (disable-theme this-theme)
-      (enable-theme  other-theme)))
-
-  (global-set-key [f5] 'toggle-theme)
-#+END_SRC
-
+**** Old themes
+- leuven
+- zenburn
 
 **** Other themes to consider
 - doom-themes
@@ -85,7 +92,6 @@
 - melancholy-theme
 - ample-theme
 - zenburn
-
 
 *** Frames
 
