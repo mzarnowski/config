@@ -126,6 +126,10 @@ line numbers in some modes (e.g. dired / eshell)
     (add-hook mode (lambda () (display-line-numbers-mode 0))))
 #+END_SRC
 
+**** Highlight current line
+#+BEGIN_SRC emacs-lisp
+  (global-hl-line-mode t)
+#+END_SRC
 
 **** Auto-reload externally modified buffers
 
