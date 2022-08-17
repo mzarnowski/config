@@ -574,11 +574,8 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 * Potentially interesting packages
 
 ** TODO epub: [[https://depp.brause.cc/nov.el/][nov]] and [[https://github.com/chenyanming/nov-xwidget][nov-xwidget]]
-
 ** TODO pdf: [[https://github.com/vedang/pdf-tools][pdf-tools]]
-
 ** TODO modal: [[https://github.com/Kungsgeten/ryo-modal][ryo-modal]]
-
 ** TODO better buffer-window [[https://www.emacswiki.org/emacs/IbufferMode][Ibuffer]] and [[https://github.com/purcell/ibuffer-vc][Ibuffer-vc]]
 
 
@@ -586,3 +583,4 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 
 ** TODO [[http://endlessparentheses.com/fill-and-unfill-paragraphs-with-a-single-key.html?source=rss][Fill-paragraph]]
 ** TODO [[http://fgiasson.com/blog/index.php/2016/05/30/creating-and-running-unit-tests-directly-in-source-files-with-org-mode/][Unit tests in org-mode]]
+** TODO [[https://pragmaticemacs.wordpress.com/2015/12/17/master-your-inbox-with-mu4e-and-org-mode/][Email in emacs]]
