@@ -73,9 +73,8 @@
             (selection . (semibold accented ))
             (popup     . (accented))))
     :config
-    (load-theme 'modus-operandi t)
-    (load-theme 'modus-vivendi  t)
     :bind ("<f5>" . modus-themes-toggle))
+  (load-theme 'modus-vivendi)
 #+END_SRC
 
 **** Old themes
@@ -196,7 +195,6 @@ Let's have the clean buffers
     (use-package git-gutter-fringe) ;; TODO icons are quite small
     (git-gutter-mode))
 #+END_SRC
-
 
 * User experience
 
