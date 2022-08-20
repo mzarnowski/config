@@ -335,12 +335,13 @@ better than the vanilla package.
     ([remap describe-symbol  ] . helpful-symbol  )					  
     ([remap describe-key     ] . helpful-key     ))
   :init
-  #Thanks, https://d12frosted.io/posts/2019-06-26-emacs-helpful.html
   (defun init/try-reuse-helpful-window (buffer)
     (if (eq major-mode 'helpful-mode)
         (switch-to-buffer buffer)
       (pop-to-buffer buffer)))
 #+END_SRC
+
+The reusing of helpful window comes from [[https://d12frosted.io/posts/2019-06-26-emacs-helpful.html][this blog post]].
 
 The *which-key* package show a pop-up window with available 
 continuations of the current key stroke chain.
