@@ -213,13 +213,11 @@ Let's have the clean buffers
   (setq version-control     t)
 #+END_SRC
 
-
 ** Require confirmation before quitting
 
 #+BEGIN_SRC emacs-lisp
   (setq confirm-kill-emacs 'y-or-n-p)
 #+END_SRC
-
 
 ** Easier confirmation of destructive actions
 
@@ -227,13 +225,11 @@ Let's have the clean buffers
   (defalias 'yes-or-no-p 'y-or-n-p)
 #+END_SRC
 
-
 ** Disable suspending frames
 
 #+BEGIN_SRC emacs-lisp
   (put 'suspend-frame 'disabled t)
 #+END_SRC
-
 
 ** Disable disruptive or unused keybindings
 
@@ -242,7 +238,6 @@ Let's have the clean buffers
   (global-unset-key (kbd "C-z"))
   (global-unset-key (kbd "C-x C-z"))
 #+END_SRC
-
 
 ** TODO Simplify operating on S-expr
 
@@ -257,14 +252,12 @@ or
   :hook emacs-lisp-mode)
 #+END_SRC
 
-
 ** Optionally log executed commands in a separate window
 
 #+BEGIN_SRC emacs-lisp
   ;; Show command log using "C-c o"
   (use-package command-log-mode)
 #+END_SRC
-
 
 ** User-friendly minibuffer
 
@@ -294,14 +287,12 @@ or
       (marginalia-mode)))
 #+END_SRC
 
-
 ** Colorful parenthesis
 
 #+BEGIN_SRC emacs-lisp
   (use-package rainbow-delimiters
     :hook (prog-mode . rainbow-delimiters-mode))
 #+END_SRC
-
 
 ** Expandable directory tree window
 
@@ -313,7 +304,6 @@ or
     (setq treemacs-select-when-already-in-treemacs 'close)
     (general-define-key "M-1"  'treemacs-select-window))
 #+END_SRC
-
 
 ** Better help
 
@@ -353,7 +343,6 @@ continuations of the current key stroke chain.
   (which-key-mode) ; for some reason, this doesn't work in :init block of use-pacakge
 #+END_SRC
 
-
 ** Navigation
 
 The *ace-window* package provides an easy way
@@ -374,7 +363,6 @@ to jump to any visible character directly
     (global-set-key (kbd "C-;") 'avy-goto-char))
 #+END_SRC
 
-
 ** Remember point position in file
 
 #+BEGIN_QUOTE 
@@ -386,7 +374,6 @@ to jump to any visible character directly
   (save-place-mode t)
 #+END_SRC
 
-
 ** Remember recently opened files
 
 #+BEGIN_SRC emacs-lisp
@@ -394,7 +381,6 @@ to jump to any visible character directly
   :init
   (recentf-mode))
 #+END_SRC
-
 
 ** Space separated completions
 
@@ -404,7 +390,6 @@ to jump to any visible character directly
     (completion-styles '(orderless basic))
     (completion-category-overrides '((file (styles basic partial-completion)))))
 #+END_SRC
-
 
 ** English Dictionary at hand
 
