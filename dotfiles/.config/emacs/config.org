@@ -327,12 +327,19 @@ better than the vanilla package.
     :commands (helpful-callable helpful-variable helpful-command helpful-key)
     :config
     (general-define-key "C-h C-h" 'helpful-at-point)
+    (setq helpful-switch-buffer-function #'init/try-reuse-helpful-window)
     :bind
     ([remap describe-function] . helpful-callable)
     ([remap describe-variable] . helpful-variable)
     ([remap describe-command ] . helpful-command )
     ([remap describe-symbol  ] . helpful-symbol  )					  
     ([remap describe-key     ] . helpful-key     ))
+  :init
+  #Thanks, https://d12frosted.io/posts/2019-06-26-emacs-helpful.html
+  (defun init/try-reuse-helpful-window (buffer)
+    (if (eq major-mode 'helpful-mode)
+        (switch-to-buffer buffer)
+      (pop-to-buffer buffer)))
 #+END_SRC
 
 The *which-key* package show a pop-up window with available 
