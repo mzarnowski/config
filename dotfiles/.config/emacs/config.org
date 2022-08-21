@@ -198,6 +198,22 @@ Let's have the clean buffers
 #+END_SRC
 
 * User experience
+** Completion
+*** at-point
+#+BEGIN_SRC emacs-lisp
+  (use-package corfu
+    :custom
+    (setq corfu-auto            t)
+    (setq corfu-cycle           t)
+    (setq corfu-separator       ?\s)
+    (setq corfu-preselect-first nil)
+    :init
+    (global-corfu-mode))
+
+  (setq tab-always-indent 'complete) ;; indent if needed, then complete
+#+END_SRC
+
+
 ** Configure file backups
 
 #+BEGIN_SRC emacs-lisp
@@ -463,7 +479,6 @@ Additionally, by setting ~(setq epa-file-select-keys nil)~ (e.g. globally for mo
 the popup for selecting targets from all matching keys. If set to nil, all matches will be used.
 
 * Major Modes
-
 ** dired-mode
 
 #+BEGIN_SRC emacs-lisp
@@ -502,7 +517,6 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 
 #+END_SRC
 
-
 ** various term modes
 
 *** Disable line numbers in term modes
@@ -523,12 +537,10 @@ the popup for selecting targets from all matching keys. If set to nil, all match
     (setq vterm-max-scrollback 10000))
 #+END_SRC 
 
-
 ** org-mode
 
 #+BEGIN_SRC emacs-lisp
   (use-package org
-    :bind ("C-<tab>" . 'org-hide-entry)
     :hook
     (org-mode . (lambda () (gpg/encrypt-to "org@mzarnowski.dev")))
     :config
@@ -586,7 +598,6 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 ** TODO modal: [[https://github.com/Kungsgeten/ryo-modal][ryo-modal]]
 ** TODO [[https://github.com/sheijk/org-menu][org-menu]]
 ** TODO better buffer-window [[https://www.emacswiki.org/emacs/IbufferMode][Ibuffer]] and [[https://github.com/purcell/ibuffer-vc][Ibuffer-vc]]
-** TODO In buffer completions: [[https://github.com/company-mode/company-mode][company-mode]]
 **  Multiplexing terminal
 *** TODO [[https://github.com/suonlight/multi-vterm][multi vterm]]
 
