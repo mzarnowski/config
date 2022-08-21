@@ -584,11 +584,55 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 ** TODO epub: [[https://depp.brause.cc/nov.el/][nov]] and [[https://github.com/chenyanming/nov-xwidget][nov-xwidget]]
 ** TODO pdf: [[https://github.com/vedang/pdf-tools][pdf-tools]]
 ** TODO modal: [[https://github.com/Kungsgeten/ryo-modal][ryo-modal]]
+** TODO [[https://github.com/sheijk/org-menu][org-menu]]
 ** TODO better buffer-window [[https://www.emacswiki.org/emacs/IbufferMode][Ibuffer]] and [[https://github.com/purcell/ibuffer-vc][Ibuffer-vc]]
-
+** TODO In buffer completions: [[https://github.com/company-mode/company-mode][company-mode]]
+**  Multiplexing terminal
+*** TODO [[https://github.com/suonlight/multi-vterm][multi vterm]]
 
 * Potentially interesting topics
 
-** TODO [[http://endlessparentheses.com/fill-and-unfill-paragraphs-with-a-single-key.html?source=rss][Fill-paragraph]]
-** TODO [[http://fgiasson.com/blog/index.php/2016/05/30/creating-and-running-unit-tests-directly-in-source-files-with-org-mode/][Unit tests in org-mode]]
-** TODO [[https://pragmaticemacs.wordpress.com/2015/12/17/master-your-inbox-with-mu4e-and-org-mode/][Email in emacs]]
+** emacs
+*** TODO [[https://planet.emacslife.com/][emacs-related blog aggregation]]
+*** TODO [[https://github.com/doublep/eldev/][Elisp development tool]]
+*** TODO [[http://endlessparentheses.com/fill-and-unfill-paragraphs-with-a-single-key.html?source=rss][Fill-paragraph]]
+*** TODO [[http://fgiasson.com/blog/index.php/2016/05/30/creating-and-running-unit-tests-directly-in-source-files-with-org-mode/][Unit tests in org-mode]]
+*** TODO [[https://pragmaticemacs.wordpress.com/2015/12/17/master-your-inbox-with-mu4e-and-org-mode/][Email in emacs]]
+*** TODO [[https://www.reddit.com/r/emacs/comments/67o5fp/resources_for_developing_major_modes/][Major mode development]]
+*** TODO [[https://with-emacs.com/posts/tutorials/what-you-need-to-know-about-hooks/][emacs hooks]]
+*** TODO [[https://mihaiolteanu.me/emacs-workspace-management.html][tab-bar mode]]
+**** TODO Force only one line
+**** TODO Setup tab name
+#+begin_src emacs-lisp :tangle no
+  (setq tab-bar-tab-name-function 'my-func)
+#+end_src
+
+**** TODO Show only buffers from given tab
+
+We can either bind C-x b to C-x p b (project-switch-to-buffer).
+This will only work for projects, so we still need to
+
+#+begin_src emacs-lisp :tangle no
+  (defun init/switch-to-tab-buffer ()
+    (interactive)
+    (if (project-current)
+        (call-interactively #'project-switch-to-buffer)
+      (call-interactively #'switch-to-buffer)))
+#+end_src
+
+*** TODO [[https://with-emacs.com/posts/tutorials/almost-all-you-need-to-know-about-variables/][emacs variables]]
+*** TODO [[https://with-emacs.com/posts/tips/quit-current-context/][quit minibuffer from other window]]
+*** TODO [[https://xenodium.com/emacs-edit-after-org-block-completion/][org-mode complete]]
+*** TODO Better config organization: [[https://d12frosted.io/posts/2021-04-09-emacs-d.html][blog]] and [[https://github.com/d12frosted/environment][git repo]]
+*** TODO Task management in org-roam:
+- [[https://d12frosted.io/posts/2020-06-23-task-management-with-roam-vol1.html][part 1]]
+- [[https://d12frosted.io/posts/2020-06-24-task-management-with-roam-vol2.html][part 2]]
+- [[https://d12frosted.io/posts/2020-06-25-task-management-with-roam-vol3.html][part 3]]
+- [[https://d12frosted.io/posts/2020-07-07-task-management-with-roam-vol4.html][part 4]]
+- [[https://d12frosted.io/posts/2021-01-16-task-management-with-roam-vol5.html][part 5]]
+- [[https://d12frosted.io/posts/2021-01-24-task-management-with-roam-vol6.html][part 6]]
+- [[https://d12frosted.io/posts/2021-05-21-task-management-with-roam-vol7.html][part 7]]
+** Ergonomics
+*** TODO [[https://protesilaos.com/codelog/2022-08-17-re-protect-eyes-coding/][On eyes]]
+*** TODO [[https://cyberthal-ghost.nfshost.com/alternatives-to-the-desk-how-to-vary-computing-posture-for-extended-endurance/][Posture]]
+
