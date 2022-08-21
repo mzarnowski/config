@@ -175,7 +175,6 @@ Let's have the clean buffers
   (use-package diminish)
 #+END_SRC
 
-
 * Version Control
 
 ** Disable built-in version control module
@@ -199,8 +198,6 @@ Let's have the clean buffers
 #+END_SRC
 
 * User experience
-
-
 ** Configure file backups
 
 #+BEGIN_SRC emacs-lisp
@@ -400,7 +397,8 @@ to jump to any visible character directly
 
 * Elisp
 
-** list operations
+** libraries
+*** list operations
 
 The *[[https://github.com/magnars/dash.el][dash]]* library simplifies working with lists (e.g. =--map= or =--filter= functions)
 
@@ -408,8 +406,7 @@ The *[[https://github.com/magnars/dash.el][dash]]* library simplifies working wi
   (use-package dash)
 #+END_SRC
 
-
-** string operations
+*** string operations
 
 The *[[https://github.com/magnars/s.el][s]]* library simplifies working with strings (e.g. =s-trim= or =s-pad-left= functions)
 
@@ -417,14 +414,33 @@ The *[[https://github.com/magnars/s.el][s]]* library simplifies working with str
   (use-package s)
 #+END_SRC
 
-
-** file operations
+*** file operations
 
 The *[[https://github.com/rejeep/f.el][f]]* library simplifies working with files (e.g. =f-read-text= or =f-ext=)
 
 #+BEGIN_SRC emacs-lisp
   (use-package f)
 #+END_SRC
+
+** (un)quote all words in region
+#+begin_src emacs-lisp
+  ;; slightly adapted from https://xenodium.com/emacs-quote-wrap-all-in-region/
+  (defun region/toggle-word-quote (beg end)
+    ;; Quote all words in the selected region.
+    ;; Word - everything separated by whitespaces
+  (interactive (list (mark) (point)))
+  (unless (region-active-p)
+    (user-error "no region to wrap"))
+  (let* ((deactivate-mark nil)
+         (toggle (lambda (word)
+                    (if (string-match-p "^\".*\"$" word)
+                        (string-trim word "\"" "\"")
+                      (format "\"%s\"" word))))
+         (words       (split-string (buffer-substring beg end)))
+         (replacement (string-join  (mapcar toggle words))))
+    (delete-region beg end)
+    (insert replacement)))
+#+end_src
 
 * Security
 
