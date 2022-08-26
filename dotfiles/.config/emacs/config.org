@@ -530,25 +530,29 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 ** org-mode
 
 #+BEGIN_SRC emacs-lisp
-  (use-package org
-    :hook
-    (org-mode . (lambda () (gpg/encrypt-to "org@mzarnowski.dev")))
+(use-package org
+  :hook
+  (org-mode . (lambda () (gpg/encrypt-to "org@mzarnowski.dev")))
+  :config
+  (setq epa-file-select-keys nil) ;; don't prompt for encryption recipients if specified by epa-file-encrypt-to
+  (setq org-hide-emphasis-markers      t)
+  (setq org-startup-indented           t)
+  (setq org-pretty-entities            t)
+  (setq org-hide-emphasis-markers      t)
+  (setq org-startup-with-inline-images t)
+  (setq org-fontify-whole-heading-line t)
+  (setq org-edit-src-content-indentation 0
+        org-src-tab-acts-natively        t
+        org-src-fontify-natively         t
+        org-confirm-babel-evaluate       nil)
+  (use-package org-superstar ;; nicer bullets
     :config
-    (setq epa-file-select-keys nil) ;; don't prompt for encryption recipients if specified by epa-file-encrypt-to
-    (setq org-hide-emphasis-markers      t)
-    (setq org-startup-indented           t)
-    (setq org-pretty-entities            t)
-    (setq org-hide-emphasis-markers      t)
-    (setq org-startup-with-inline-images t)
-    (setq org-fontify-whole-heading-line t)
-    (use-package org-superstar ;; nicer bullets
-      :config
-      (setq org-superstar-special-todo-items t)
-      :hook
-      (org-mode . org-superstar-mode))
-    (use-package org-appear ;; Show hidden emphasis markers
-      :hook
-      (org-mode . org-appear-mode)))
+    (setq org-superstar-special-todo-items t)
+    :hook
+    (org-mode . org-superstar-mode))
+  (use-package org-appear ;; Show hidden emphasis markers
+    :hook
+    (org-mode . org-appear-mode)))
 #+END_SRC
 
 *** org-roam
