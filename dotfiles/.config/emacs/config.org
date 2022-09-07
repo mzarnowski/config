@@ -585,6 +585,46 @@ the popup for selecting targets from all matching keys. If set to nil, all match
     (org-roam-setup))
 #+END_SRC
 
+* RSS
+
+The layout of the feed .org file is just an outline with property
+drawers defined on each header. There are two properties:
+- =url=  - uninherited (duh)
+- =feed= - inherited
+
+#+begin_src emacs-lisp
+(defun elfeed-org-url ()
+  (org-entry-get nil "url"))
+
+(defun elfeed-org-feeds ()
+  (let* ((raw   (org-entry-get-with-inheritance "feed"))
+	 (feeds (split-string raw " ")))
+    (mapcar #'make-symbol feeds)))
+
+(defun elfeed-org-assemble ()
+  (let* ((url (elfeed-org-url))
+	 (feeds (elfeed-org-feeds)))
+    (unless (null url)
+      (cons url feeds))))
+
+(defun elfeeds-org-load-file (path)
+    (with-temp-buffer
+      (org-mode)
+      (insert-file-contents path)
+      (let ((headlines (cddr (org-element-parse-buffer 'headline)))
+	    (feeds (org-map-entries #'elfeed-org-assemble)))
+	(remove nil feeds))))
+
+(defun elfeed-reload-feeds ()
+  (interactive)
+  (setq elfeed-feeds (elfeeds-org-load-file "~/.config/emacs/feeds.org.gpg")))
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package elfeed
+  :commands elfeed
+  :hook (elfeed-search-mode . elfeed-reload-feeds))
+#+end_src
 * Potentially interesting packages
 
 ** TODO epub: [[https://depp.brause.cc/nov.el/][nov]] and [[https://github.com/chenyanming/nov-xwidget][nov-xwidget]]
