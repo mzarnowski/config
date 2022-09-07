@@ -645,6 +645,10 @@ drawers defined on each header. There are two properties:
   :commands elfeed
   :hook (elfeed-search-mode . elfeed-reload-feeds))
 #+end_src
+
+** TODO [[https://lucidmanager.org/productivity/read-rss-feeds-with-emacs-and-elfeed/][guide #1]]
+** TODO [[https://github.com/remyhonig/elfeed-org][org-based config]]
+
 * Potentially interesting packages
 
 ** TODO epub: [[https://depp.brause.cc/nov.el/][nov]] and [[https://github.com/chenyanming/nov-xwidget][nov-xwidget]]
