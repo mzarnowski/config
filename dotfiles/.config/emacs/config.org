@@ -406,10 +406,12 @@ to jump to any visible character directly
     :bind ("C-h w" . #'mw-thesaurus-lookup-dwim))
 #+END_SRC
 
-* Elisp
+* Software Development
 
-** libraries
-*** list operations
+** Elisp
+
+*** libraries
+**** list operations
 
 The *[[https://github.com/magnars/dash.el][dash]]* library simplifies working with lists (e.g. =--map= or =--filter= functions)
 
@@ -417,7 +419,7 @@ The *[[https://github.com/magnars/dash.el][dash]]* library simplifies working wi
   (use-package dash)
 #+END_SRC
 
-*** string operations
+**** string operations
 
 The *[[https://github.com/magnars/s.el][s]]* library simplifies working with strings (e.g. =s-trim= or =s-pad-left= functions)
 
@@ -425,7 +427,7 @@ The *[[https://github.com/magnars/s.el][s]]* library simplifies working with str
   (use-package s)
 #+END_SRC
 
-*** file operations
+**** file operations
 
 The *[[https://github.com/rejeep/f.el][f]]* library simplifies working with files (e.g. =f-read-text= or =f-ext=)
 
@@ -433,7 +435,11 @@ The *[[https://github.com/rejeep/f.el][f]]* library simplifies working with file
   (use-package f)
 #+END_SRC
 
-** (un)quote all words in region
+*** testing
+#+begin_src emacs-lisp
+  (use-package buttercup)
+#+end_src
+*** (un)quote all words in region
 #+begin_src emacs-lisp
   ;; slightly adapted from https://xenodium.com/emacs-quote-wrap-all-in-region/
   (defun region/toggle-word-quote (beg end)
