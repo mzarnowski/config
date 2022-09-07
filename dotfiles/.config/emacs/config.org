@@ -684,6 +684,11 @@ This will only work for projects, so we still need to
 - [[https://d12frosted.io/posts/2021-05-21-task-management-with-roam-vol7.html][part 7]]
 
 *** TODO [[https://blog.jethro.dev/posts/capturing_inbox/][org-mode workflow]]
+*** TODO [[https://github.com/ahungry/md4rd][reddit]]
+*** Configs
+**** TODO https://gitlab.com/dwt1/dotfiles/-/blob/2a687641af1fa4e31e080960e0b6a5f3d21d759d/.emacs.d.gnu/config.org
 ** Ergonomics
 *** TODO [[https://protesilaos.com/codelog/2022-08-17-re-protect-eyes-coding/][On eyes]]
 *** TODO [[https://cyberthal-ghost.nfshost.com/alternatives-to-the-desk-how-to-vary-computing-posture-for-extended-endurance/][Posture]]
+** Blogs
+*** [[http://www.paulgraham.com/rss.html][Paul Graham]]
