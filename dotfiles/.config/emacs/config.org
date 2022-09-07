@@ -453,6 +453,15 @@ The *[[https://github.com/rejeep/f.el][f]]* library simplifies working with file
     (insert replacement)))
 #+end_src
 
+** Common Lisp
+#+begin_src emacs-lisp
+(use-package sly
+  :config
+  (setq inferior-list-program "/usr/bin/sbcl"))
+#+end_src
+
+*** TODO Reconfigure describe (C-h C-h) in sly mode
+
 * Security
 
 ** Allow setting symmetric-encryption-only easily
