@@ -195,18 +195,23 @@ Let's have the clean buffers
 
 * User experience
 ** Completion
-*** at-point
-#+BEGIN_SRC emacs-lisp
-  (use-package corfu
-    :custom
-    (setq corfu-auto            t)
-    (setq corfu-cycle           t)
-    (setq corfu-separator       ?\s)
-    (setq corfu-preselect-first nil)
-    :init
-    (global-corfu-mode))
 
-  (setq tab-always-indent 'complete) ;; indent if needed, then complete
+#+BEGIN_SRC emacs-lisp
+(setq tab-always-indent 'complete) ;; indent if needed, then complete
+
+(use-package corfu
+  :custom
+  (setq corfu-auto            t)
+  (setq corfu-cycle           t)
+  (setq corfu-separator       ?\s)
+  (setq corfu-preselect-first nil)
+  :init
+  (global-corfu-mode))
+
+(use-package corfu-doc
+  :init
+  (corfu-doc-mode))
+
 #+END_SRC
 
 ** Configure file backups
