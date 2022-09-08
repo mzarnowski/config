@@ -307,17 +307,6 @@ or
     :hook (prog-mode . rainbow-delimiters-mode))
 #+END_SRC
 
-** Expandable directory tree window
-
-#+BEGIN_SRC emacs-lisp
-  (use-package treemacs
-    :defer t
-    :config
-    (init/disable-line-numbers 'treemacs-mode-hook)
-    (setq treemacs-select-when-already-in-treemacs 'close)
-    (general-define-key "M-1"  'treemacs-select-window))
-#+END_SRC
-
 ** Better help
 
 The *helpful* package describes various symbols much 
