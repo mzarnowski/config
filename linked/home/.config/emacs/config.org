@@ -1,0 +1,719 @@
+* Package Management
+** Configure package sources
+#+BEGIN_SRC emacs-lisp
+  (require 'package)
+  (setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                           ("elpa"  . "https://elpa.gnu.org/packages/")))
+#+END_SRC
+
+** Initalize pacakge system
+#+BEGIN_SRC emacs-lisp
+  (package-initialize) 
+  (unless package-archive-contents
+          (package-refresh-contents))
+#+END_SRC
+
+** Install package managing the packages
+#+BEGIN_SRC emacs-lisp
+  (unless (package-installed-p 'use-package)
+          (package-install     'use-package))
+
+  (require 'use-package)
+  (setq use-package-always-ensure t)
+#+END_SRC
+
+** Configure auto-update of packages
+
+#+BEGIN_SRC emacs-lisp
+  (use-package auto-package-update
+    :custom
+    (auto-package-update-interval             7)
+    (auto-package-update-prompt-before-update t)
+    (auto-package-update-hide-results         t)
+    :config
+    (auto-package-update-maybe))
+#+END_SRC
+
+* UI
+*** Theme
+**** Install and load themes
+
+#+BEGIN_SRC emacs-lisp
+  (use-package modus-themes
+    :init
+    (setq modus-themes-org-blocks        'gray-background
+          modus-themes-bold-constructs   t
+          modus-themes-italic-constructs t
+          modus-themes-fringes           'subtle
+          modus-themes-hl-line           '(intense)
+          modus-themes-paren-match       '(bold intense)
+          modus-themes-mode-line         '(accented)
+          modus-themes-syntax            '(faint green-strings alt-syntax)
+          modus-themes-region            '(accented)
+          modus-themes-subtle-line-numbers nil
+          modus-themes-mixed-fonts         nil
+          modus-themes-prompts  '(intense background) ;; minibuffer prompts
+          modus-themes-markup   '(intense background) ;; e.g. =verbatim= or ~code~
+          modus-themes-links    '(faint italic background))
+    (setq modus-themes-headings
+          '((1 . (background overline  1.7 variable-pitch))
+            (2 . (background overline  1.5 variable-pitch))
+            (3 . (background overline  1.3))
+            (4 . (background overline  1.1))
+            (t . (monochrome))))
+    (setq modus-themes-completions
+          '((matches   . (extrabold background ))
+            (selection . (semibold accented ))
+            (popup     . (accented))))
+    :config
+    :bind ("<f5>" . modus-themes-toggle))
+  (load-theme 'modus-vivendi)
+#+END_SRC
+
+**** Old themes
+- leuven
+- zenburn
+
+**** Other themes to consider
+- doom-themes
+  - doom-one-light
+  - doom-palenight
+  - doom-1337
+  - doom-Iosvkem
+  - doom-monlight
+- melancholy-theme
+- ample-theme
+- zenburn
+
+*** Frames
+
+**** Disable various bars  
+#+BEGIN_SRC emacs-lisp
+  (tool-bar-mode   -1)
+  (menu-bar-mode   -1)
+  (scroll-bar-mode -1)
+  (tooltip-mode    -1)
+#+END_SRC
+
+
+*** Windows
+
+**** Enable window padding on left and right
+Sadly, this doesn't seem to work in terminal
+#+BEGIN_SRC emacs-lisp
+  (set-fringe-mode 16)
+#+END_SRC
+
+*** Buffers
+
+**** Make scratch-buffer empty initially
+#+begin_src emacs-lisp
+(setq initial-scratch-message "")
+#+end_src
+
+**** Show line numbers
+
+Additionally, there is a small function to disable the
+line numbers in some modes (e.g. dired / eshell)
+
+#+BEGIN_SRC emacs-lisp
+  (global-display-line-numbers-mode t)
+
+  (defun init/disable-line-numbers (mode)
+    (add-hook mode (lambda () (display-line-numbers-mode 0))))
+#+END_SRC
+
+**** Highlight current line
+#+BEGIN_SRC emacs-lisp
+(global-hl-line-mode t)
+
+(defun init/disable-line-highlight (mode)
+  (add-hook mode (lambda () (setq-local global-hl-line-mode nil))))
+#+END_SRC
+
+**** Auto-reload externally modified buffers
+
+#+BEGIN_SRC emacs-lisp
+  (global-auto-revert-mode t)
+#+END_SRC
+
+
+**** Configure tabulations
+
+#+BEGIN_SRC emacs-lisp
+  (setq tab-width 2)
+#+END_SRC
+
+
+**** Global Fonts
+
+#+BEGIN_SRC emacs-lisp
+  (set-face-attribute 'default nil :font "Hack" :height 210)
+#+END_SRC
+
+
+**** Disable startup messages
+
+Let's have the clean buffers
+
+#+BEGIN_SRC emacs-lisp
+  (setq inhibit-startup-screen t)
+  (setq inhibit-startup-message t)
+#+END_SRC
+
+*** Mode line
+
+**** Show column of the point
+
+#+BEGIN_SRC emacs-lisp
+  (column-number-mode)
+#+END_SRC
+
+
+**** Hide minor mode on mode line
+
+#+BEGIN_SRC emacs-lisp
+  (use-package diminish)
+#+END_SRC
+
+* Version Control
+** Disable built-in version control module
+
+#+BEGIN_SRC emacs-lisp
+  ;; disable default vc-mode
+  (setq vc-handled-backends nil)
+  (require 'vc)
+  (eval-after-load "vc" '(remove-hook 'find-file-hook 'vc-find-file-hook))
+  (eval-after-load "vc" '(remove-hook 'find-file-hook 'vc-refresh-state))
+#+END_SRC
+
+** Enable magit
+
+#+BEGIN_SRC emacs-lisp
+  (use-package magit
+    :config
+    (use-package git-gutter-fringe) ;; TODO icons are quite small
+    (git-gutter-mode))
+#+END_SRC
+
+* User experience
+** Completion
+
+#+BEGIN_SRC emacs-lisp
+(setq tab-always-indent 'complete) ;; indent if needed, then complete
+
+(use-package corfu
+  :custom
+  (setq corfu-auto            t)
+  (setq corfu-cycle           t)
+  (setq corfu-separator       ?\s)
+  (setq corfu-preselect-first nil)
+  :init
+  (global-corfu-mode))
+
+(use-package corfu-doc
+  :init
+  (corfu-doc-mode))
+
+#+END_SRC
+
+** Configure file backups
+
+#+BEGIN_SRC emacs-lisp
+  (setq backup-directory-alist `(("." . "~/.local/emacs/backup")))
+  (setq backup-by-copying-when-linked t)
+
+  (setq delete-old-versions t)
+  (setq kept-new-versions   6)
+  (setq kept-old-versions   2)
+  (setq version-control     t)
+#+END_SRC
+
+** Require confirmation before quitting
+
+#+BEGIN_SRC emacs-lisp
+  (setq confirm-kill-emacs 'y-or-n-p)
+#+END_SRC
+
+** Easier confirmation of destructive actions
+
+#+BEGIN_SRC emacs-lisp
+  (defalias 'yes-or-no-p 'y-or-n-p)
+#+END_SRC
+
+** Disable suspending frames
+
+#+BEGIN_SRC emacs-lisp
+  (put 'suspend-frame 'disabled t)
+#+END_SRC
+
+** Disable disruptive or unused keybindings
+
+#+BEGIN_SRC emacs-lisp
+  ;; disable suspending frames
+  (global-unset-key (kbd "C-z"))
+  (global-unset-key (kbd "C-x C-z"))
+#+END_SRC
+
+** TODO Simplify operating on S-expr
+
+#+BEGIN_SRC emacs-lisp :tangle no
+  (use-package smartparens)
+#+END_SRC
+
+or
+
+#+BEGIN_SRC emacs-lisp :tangle no
+(use-package paredit
+  :hook emacs-lisp-mode)
+#+END_SRC
+
+** Optionally log executed commands in a separate window
+
+#+BEGIN_SRC emacs-lisp
+  ;; Show command log using "C-c o"
+  (use-package command-log-mode)
+#+END_SRC
+
+** User-friendly minibuffer
+
+#+BEGIN_SRC emacs-lisp
+  (use-package vertico
+    :init
+    (vertico-mode)
+    :custom
+    (vertico-cycle t)
+    :config
+    (use-package embark ;; mini-buffer actions
+      :bind
+      (("C-."    . embark-act     )
+       ("<menu>" . embark-act     )
+       ("C->"    . embark-become  )
+       ("M-."    . embark-dwim    )
+       ("C-h B"  . embark-bindings))
+      :init
+      (setq prefix-help-command #'embark-prefix-help-command))
+    (use-package savehist ;; remembers previous commands
+      :init
+      (savehist-mode)
+      :config
+      (setq history-length 256))
+    (use-package marginalia ;; provides more contextual info
+      :init
+      (marginalia-mode)))
+#+END_SRC
+
+** Colorful parenthesis
+
+#+BEGIN_SRC emacs-lisp
+  (use-package rainbow-delimiters
+    :hook (prog-mode . rainbow-delimiters-mode))
+#+END_SRC
+
+** Better help
+
+The *helpful* package describes various symbols much 
+better than the vanilla package.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package helpful
+    :commands (helpful-callable helpful-variable helpful-command helpful-key)
+    :config
+    (general-define-key "C-h C-h" 'helpful-at-point)
+    (setq helpful-switch-buffer-function #'init/try-reuse-helpful-window)
+    :bind
+    ([remap describe-function] . helpful-callable)
+    ([remap describe-variable] . helpful-variable)
+    ([remap describe-command ] . helpful-command )
+    ([remap describe-symbol  ] . helpful-symbol  )					  
+    ([remap describe-key     ] . helpful-key     ))
+  :init
+  (defun init/try-reuse-helpful-window (buffer)
+    (if (eq major-mode 'helpful-mode)
+        (switch-to-buffer buffer)
+      (pop-to-buffer buffer)))
+#+END_SRC
+
+The reusing of helpful window comes from [[https://d12frosted.io/posts/2019-06-26-emacs-helpful.html][this blog post]].
+
+The *which-key* package show a pop-up window with available 
+continuations of the current key stroke chain.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package which-key
+    :diminish which-key-mode
+    :config
+    (setq which-key-idle-delay 0.3))
+
+  (which-key-mode) ; for some reason, this doesn't work in :init block of use-pacakge
+#+END_SRC
+
+** Navigation
+
+The *ace-window* package provides an easy way
+to jump to any visible window directly
+
+#+BEGIN_SRC emacs-lisp
+(use-package ace-window
+  :config
+  (global-set-key (kbd "C-x o") 'ace-window))
+#+END_SRC
+
+The *avy* package provides an easy way
+to jump to any visible character directly
+
+#+BEGIN_SRC emacs-lisp
+  (use-package avy
+    :config
+    (global-set-key (kbd "C-;") 'avy-goto-char))
+#+END_SRC
+
+** Remember point position in file
+
+#+BEGIN_QUOTE 
+  When you visit a file, point goes to the last place
+  where it was when you previously visited the same file.
+#+END_QUOTE
+
+#+BEGIN_SRC emacs-lisp
+  (save-place-mode t)
+#+END_SRC
+
+** Remember recently opened files
+
+#+BEGIN_SRC emacs-lisp
+(use-package recentf
+  :init
+  (recentf-mode))
+#+END_SRC
+
+** Space separated completions
+
+#+BEGIN_SRC emacs-lisp
+  (use-package orderless
+    :custom
+    (completion-styles '(orderless basic))
+    (completion-category-overrides '((file (styles basic partial-completion)))))
+#+END_SRC
+
+** English Dictionary at hand
+
+#+BEGIN_SRC emacs-lisp
+  (use-package mw-thesaurus
+    :bind ("C-h w" . #'mw-thesaurus-lookup-dwim))
+#+END_SRC
+
+* Software Development
+
+** Elisp
+
+*** libraries
+**** list operations
+
+The *[[https://github.com/magnars/dash.el][dash]]* library simplifies working with lists (e.g. =--map= or =--filter= functions)
+
+#+BEGIN_SRC emacs-lisp
+  (use-package dash)
+#+END_SRC
+
+**** string operations
+
+The *[[https://github.com/magnars/s.el][s]]* library simplifies working with strings (e.g. =s-trim= or =s-pad-left= functions)
+
+#+BEGIN_SRC emacs-lisp
+  (use-package s)
+#+END_SRC
+
+**** file operations
+
+The *[[https://github.com/rejeep/f.el][f]]* library simplifies working with files (e.g. =f-read-text= or =f-ext=)
+
+#+BEGIN_SRC emacs-lisp
+  (use-package f)
+#+END_SRC
+
+*** testing
+#+begin_src emacs-lisp
+  (use-package buttercup)
+#+end_src
+*** (un)quote all words in region
+#+begin_src emacs-lisp
+  ;; slightly adapted from https://xenodium.com/emacs-quote-wrap-all-in-region/
+  (defun region/toggle-word-quote (beg end)
+    ;; Quote all words in the selected region.
+    ;; Word - everything separated by whitespaces
+  (interactive (list (mark) (point)))
+  (unless (region-active-p)
+    (user-error "no region to wrap"))
+  (let* ((deactivate-mark nil)
+         (toggle (lambda (word)
+                    (if (string-match-p "^\".*\"$" word)
+                        (string-trim word "\"" "\"")
+                      (format "\"%s\"" word))))
+         (words       (split-string (buffer-substring beg end)))
+         (replacement (string-join  (mapcar toggle words))))
+    (delete-region beg end)
+    (insert replacement)))
+#+end_src
+
+** Common Lisp
+#+begin_src emacs-lisp
+(use-package sly
+  :config
+  (setq inferior-list-program "/usr/bin/sbcl"))
+#+end_src
+
+*** TODO Reconfigure describe (C-h C-h) in sly mode
+
+* Security
+
+** Allow setting symmetric-encryption-only easily
+#+BEGIN_SRC emacs-lisp
+  (defun gpg/symmetric-encryption-only ()
+    (setq epa-file-select-keys "symmetric-only")) ;; any value but t or nil will do
+#+END_SRC
+
+** Allow setting automatic encryption recipient
+
+#+BEGIN_SRC emacs-lisp
+  (defun gpg/encrypt-to (name)
+    (setq-local epa-file-encrypt-to (list name)))
+#+END_SRC
+
+This can be later used in =use-package= as ~:hook (mode . (lambda () (gpg/encrypt-to "my-email")))~.
+
+Additionally, by setting ~(setq epa-file-select-keys nil)~ (e.g. globally for mode) we can avoid
+the popup for selecting targets from all matching keys. If set to nil, all matches will be used.
+
+* Major Modes
+** dired-mode
+
+#+BEGIN_SRC emacs-lisp
+  (use-package dired
+    :ensure nil ; not to be downloaded
+    :commands (dired dired-jump)
+    :custom
+    (dired-listing-switches "-agho --group-directories-first")
+    :config
+    (use-package dired-single) ;; reuse dired buffer
+    (define-key dired-mode-map [remap dired-find-file] 'dired-single-buffer)
+    (define-key dired-mode-map [remap dired-mouse-find-file-other-window] 'dired-single-buffer-mouse)
+    (define-key dired-mode-map [remap dired-up-directory] 'dired-single-up-directory)
+    (use-package treemacs-icons-dired 
+      :if (display-graphic-p)
+      :hook (dired-mode . treemacs-icons-dired-mode))
+    (use-package dired-collapse ;; collapse directories with only one child into e.g. foo/bar/baz.txt
+      :hook (dired-mode . dired-collapse-mode)))
+#+END_SRC
+
+
+*** TODO hide dotfiles
+
+#+BEGIN_SRC emacs-lisp :tangle no
+(use-package dired-hide-dotfiles
+  :hook (dired-mode . dired-hide-dotfiles-mode))
+#+END_SRC
+
+*** TODO open files externally
+
+#+BEGIN_SRC emacs-lisp :tangle no
+(use-package dired-open
+  :config
+  (setq dired-open-extensions '(("mkv" . "mpv"))))
+(set-face-attribute 'default nil :font "Hack" :height 300)
+
+#+END_SRC
+
+** various term modes
+
+*** Disable line numbers in term modes
+
+#+BEGIN_SRC emacs-lisp
+  (init/disable-line-numbers 'term-mode-hook)
+  (init/disable-line-numbers 'vterm-mode-hook)
+  (init/disable-line-numbers 'shell-mode-hook)
+  (init/disable-line-numbers 'eshell-mode-hook)
+#+END_SRC
+
+*** Disable line highlighting in term modes
+#+begin_src emacs-lisp
+(init/disable-line-highlight 'term-mode-hook)
+(init/disable-line-highlight 'vterm-mode-hook)
+(init/disable-line-highlight 'shell-mode-hook)
+(init/disable-line-highlight 'eshell-mode-hook)
+#+end_src
+
+*** Install v-term
+
+#+BEGIN_SRC emacs-lisp
+  (use-package vterm
+    :commands vterm
+    :config
+    (setq vterm-max-scrollback 10000))
+#+END_SRC 
+
+** org-mode
+
+#+BEGIN_SRC emacs-lisp
+(use-package org
+  :config
+  (setq epa-file-select-keys nil) ;; don't prompt for encryption recipients if specified by epa-file-encrypt-to
+  (setq org-hide-emphasis-markers      t)
+  (setq org-startup-indented           t)
+  (setq org-pretty-entities            t)
+  (setq org-hide-emphasis-markers      t)
+  (setq org-startup-with-inline-images t)
+  (setq org-fontify-whole-heading-line t)
+  (setq org-edit-src-content-indentation 0
+        org-src-tab-acts-natively        t
+        org-src-fontify-natively         t
+        org-confirm-babel-evaluate       nil)
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((shell . t)))
+  (use-package org-superstar ;; nicer bullets
+    :config
+    (setq org-superstar-special-todo-items t)
+    :hook
+    (org-mode . org-superstar-mode))
+  (use-package org-appear ;; Show hidden emphasis markers
+    :hook
+    (org-mode . org-appear-mode)))
+#+END_SRC
+
+*** org-roam
+
+#+BEGIN_SRC emacs-lisp
+  (use-package org-roam
+    :custom
+    (org-roam-directory "~/workspace/mzarnowski/org/notes")
+    (org-roam-dailies-directory "journal/")
+    (org-node-completions-everywhere t)
+    :bind
+    (("C-c n f" . org-roam-node-find    )
+     ("C-c n i" . org-roam-node-insert  )
+     ("C-c n l" . org-roam-buffer-toggle)
+     ;; configure roam-dailies
+     ("C-c n d" . org-roam-dailies-map  )
+     :map org-roam-dailies-map
+     ("Y" . org-roam-dailies-capture-yesterday)
+     ("T" . org-roam-dailies-capture-tomorrow ))
+    :config
+    (require 'org-roam-dailies)
+    (setq org-roam-capture-templates
+          '(("P" "public" plain "%?"
+             :target     (file+head "%(org-id-uuid).org" "#+title: ${title}\n")
+             :unnarrowed t)
+            ("p" "private" plain "%?"
+             :target     (file+head "%(org-id-uuid).org.gpg" "#+title: ${title}\n")
+             :unnarrowed t)))
+    (setq org-return-follows-link t)
+    (org-roam-setup))
+#+END_SRC
+
+* RSS
+
+The layout of the feed .org file is just an outline with property
+drawers defined on each header. There are two properties:
+- =url=  - uninherited (duh)
+- =feed= - inherited
+
+#+begin_src emacs-lisp
+(defun elfeed-org-url ()
+  (org-entry-get nil "url"))
+
+(defun elfeed-org-feeds ()
+  (let* ((raw   (org-entry-get-with-inheritance "feed"))
+	 (feeds (split-string raw " ")))
+    (mapcar #'make-symbol feeds)))
+
+(defun elfeed-org-assemble ()
+  (let* ((url (elfeed-org-url))
+	 (feeds (elfeed-org-feeds)))
+    (unless (null url)
+      (cons url feeds))))
+
+(defun elfeeds-org-load-file (path)
+    (with-temp-buffer
+      (org-mode)
+      (insert-file-contents path)
+      (let ((headlines (cddr (org-element-parse-buffer 'headline)))
+	    (feeds (org-map-entries #'elfeed-org-assemble)))
+	(remove nil feeds))))
+
+(defun elfeed-reload-feeds ()
+  (interactive)
+  (setq elfeed-feeds (elfeeds-org-load-file "~/.config/emacs/feeds.org.gpg")))
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package elfeed
+  :commands elfeed
+  :hook (elfeed-search-mode . elfeed-reload-feeds))
+#+end_src
+
+** TODO [[https://lucidmanager.org/productivity/read-rss-feeds-with-emacs-and-elfeed/][guide #1]]
+** TODO [[https://github.com/remyhonig/elfeed-org][org-based config]]
+
+* Potentially interesting packages
+
+** TODO epub: [[https://depp.brause.cc/nov.el/][nov]] and [[https://github.com/chenyanming/nov-xwidget][nov-xwidget]]
+** TODO pdf: [[https://github.com/vedang/pdf-tools][pdf-tools]]
+** TODO modal: [[https://github.com/Kungsgeten/ryo-modal][ryo-modal]]
+** TODO [[https://github.com/sheijk/org-menu][org-menu]]
+** TODO better buffer-window [[https://www.emacswiki.org/emacs/IbufferMode][Ibuffer]] and [[https://github.com/purcell/ibuffer-vc][Ibuffer-vc]]
+**  Multiplexing terminal
+*** TODO [[https://github.com/suonlight/multi-vterm][multi vterm]]
+
+* Potentially interesting topics
+** emacs
+*** TODO [[https://planet.emacslife.com/][emacs-related blog aggregation]]
+*** TODO [[https://github.com/doublep/eldev/][Elisp development tool]]
+*** TODO [[http://endlessparentheses.com/fill-and-unfill-paragraphs-with-a-single-key.html?source=rss][Fill-paragraph]]
+*** TODO [[http://fgiasson.com/blog/index.php/2016/05/30/creating-and-running-unit-tests-directly-in-source-files-with-org-mode/][Unit tests in org-mode]]
+*** TODO [[https://pragmaticemacs.wordpress.com/2015/12/17/master-your-inbox-with-mu4e-and-org-mode/][Email in emacs]]
+*** TODO [[https://www.reddit.com/r/emacs/comments/67o5fp/resources_for_developing_major_modes/][Major mode development]]
+*** TODO [[https://with-emacs.com/posts/tutorials/what-you-need-to-know-about-hooks/][emacs hooks]]
+*** TODO [[https://mihaiolteanu.me/emacs-workspace-management.html][tab-bar mode]]
+**** TODO Force only one line
+**** TODO Setup tab name
+#+begin_src emacs-lisp :tangle no
+  (setq tab-bar-tab-name-function 'my-func)
+#+end_src
+
+**** TODO Show only buffers from given tab
+
+We can either bind C-x b to C-x p b (project-switch-to-buffer).
+This will only work for projects, so we still need to
+
+#+begin_src emacs-lisp :tangle no
+  (defun init/switch-to-tab-buffer ()
+    (interactive)
+    (if (project-current)
+        (call-interactively #'project-switch-to-buffer)
+      (call-interactively #'switch-to-buffer)))
+#+end_src
+
+*** TODO [[https://with-emacs.com/posts/tutorials/almost-all-you-need-to-know-about-variables/][emacs variables]]
+*** TODO [[https://with-emacs.com/posts/tips/quit-current-context/][quit minibuffer from other window]]
+*** TODO [[https://xenodium.com/emacs-edit-after-org-block-completion/][org-mode complete]]
+*** TODO [[https://yannesposito.com/posts/0022-org-agenda-on-your-startup-page/index.html][org-agenda on startup page]]
+*** TODO Better config organization: [[https://d12frosted.io/posts/2021-04-09-emacs-d.html][blog]] and [[https://github.com/d12frosted/environment][git repo]]
+*** TODO Task management in org-roam:
+- [[https://d12frosted.io/posts/2020-06-23-task-management-with-roam-vol1.html][part 1]]
+- [[https://d12frosted.io/posts/2020-06-24-task-management-with-roam-vol2.html][part 2]]
+- [[https://d12frosted.io/posts/2020-06-25-task-management-with-roam-vol3.html][part 3]]
+- [[https://d12frosted.io/posts/2020-07-07-task-management-with-roam-vol4.html][part 4]]
+- [[https://d12frosted.io/posts/2021-01-16-task-management-with-roam-vol5.html][part 5]]
+- [[https://d12frosted.io/posts/2021-01-24-task-management-with-roam-vol6.html][part 6]]
+- [[https://d12frosted.io/posts/2021-05-21-task-management-with-roam-vol7.html][part 7]]
+
+*** TODO [[https://blog.jethro.dev/posts/capturing_inbox/][org-mode workflow]]
+*** TODO [[https://github.com/ahungry/md4rd][reddit]]
+*** Configs
+**** TODO https://gitlab.com/dwt1/dotfiles/-/blob/2a687641af1fa4e31e080960e0b6a5f3d21d759d/.emacs.d.gnu/config.org
+** Ergonomics
+*** TODO [[https://protesilaos.com/codelog/2022-08-17-re-protect-eyes-coding/][On eyes]]
+*** TODO [[https://cyberthal-ghost.nfshost.com/alternatives-to-the-desk-how-to-vary-computing-posture-for-extended-endurance/][Posture]]
+** Blogs
+*** [[http://www.paulgraham.com/rss.html][Paul Graham]]

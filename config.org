@@ -1,0 +1,294 @@
+** Bash
+*** Login
+#+begin_src shell :tangle ~/.config/bash/login.sh :results silent
+#+end_src
+*** Logout
+#+begin_src shell :tangle ~/.config/bash/logout.sh :results silent
+#+end_src
+*** Profile
+#+begin_src shell :tangle ~/.config/bash/profile.sh :results silent
+[[ -f ~/.bashrc ]] && . ~/.bashrc
+#+end_src
+*** Startup
+
+#+begin_src shell :tangle ~/.config/bash/rc.sh
+## Colors?  Used for the prompt.
+#Regular text color
+BLACK='\e[0;30m'
+#Bold text color
+BBLACK='\e[1;30m'
+#background color
+BGBLACK='\e[40m'
+RED='\e[0;31m'
+BRED='\e[1;31m'
+BGRED='\e[41m'
+GREEN='\e[0;32m'
+BGREEN='\e[1;32m'
+BGGREEN='\e[1;32m'
+YELLOW='\e[0;33m'
+BYELLOW='\e[1;33m'
+BGYELLOW='\e[1;33m'
+BLUE='\e[0;34m'
+BBLUE='\e[1;34m'
+BGBLUE='\e[1;34m'
+MAGENTA='\e[0;35m'
+BMAGENTA='\e[1;35m'
+BGMAGENTA='\e[1;35m'
+CYAN='\e[0;36m'
+BCYAN='\e[1;36m'
+BGCYAN='\e[1;36m'
+WHITE='\e[0;37m'
+BWHITE='\e[1;37m'
+BGWHITE='\e[1;37m'
+DEFAULT='\e[m'
+GRAY_LIGHT='\e[0;37m'
+GRAY_DARK='\e[1;30m'
+
+GIT_REF="\$(git rev-parse --abbrev-ref HEAD 2> /dev/null)"
+TIME="\$(date +%H:%M)"
+
+DIRECTORY="${BLUE}\$(pwd) ${BYELLOW}${GIT_REF}${DEFAULT}"
+USER_AND_HOST="${GREEN}${USER}${CYAN}@${GREEN}${HOSTNAME}${DEFAULT}"
+
+LEN_SEP=7               # length of separators
+LEN_TIME=4              # hour + minutes
+LEN_PWD="\$(pwd             | wc -c)"
+LEN_GIT="\$(echo ${GIT_REF} | wc -c)"
+LEN_USR_INFO="\$(expr ${#USER} + ${#HOSTNAME})"
+LEN_DASH="\$(expr \$(tput cols) - ${LEN_TIME} - ${LEN_PWD} - ${LEN_GIT} - ${LEN_USR_INFO} - ${LEN_SEP})"
+
+DASHES="${GRAY_LIGHT}\$(printf "%0.s-" \$(seq 1 ${LEN_DASH}))${DEFAULT}"
+
+PROMPT_LINE_1="${TIME} ${DIRECTORY}  ${DASHES}  ${USER_AND_HOST}"
+PROMPT_LINE_2="\$ "
+
+export PS1="${PROMPT_LINE_1}\n${PROMPT_LINE_2}"
+#+end_src
+
+
+*** Colorful commands
+#+begin_src shell :tangle ~/.config/bash/rc.sh :results silent
+
+if type -P dircolors >/dev/null ; then
+	if [[ -f ~/.dir_colors ]] ; then
+		eval $(dircolors -b ~/.dir_colors)
+	elif [[ -f /etc/DIR_COLORS ]] ; then
+		eval $(dircolors -b /etc/DIR_COLORS)
+	fi
+fi
+
+alias ls='ls --color=auto'
+alias grep='grep --colour=auto'
+alias egrep='egrep --colour=auto'
+alias fgrep='fgrep --colour=auto'
+#+end_src
+
+*** Configure
+#+begin_src shell :tangle ~/.config/bash/rc.sh
+shopt -s checkwinsize # check window size on re-gaining focus #65623
+shopt -s expand_aliases
+shopt -s histappend   # append history, instead of overwriting it #139609
+
+export EDITOR=/usr/bin/vim
+#+end_src
+
+*** Aliases
+#+begin_src shell :tangle ~/.config/bash/rc.sh
+alias magit='emacsclient -a emacs -e "(magit-status \"$(git rev-parse --show-toplevel)\")"'
+#+end_src
+
+*** Functions
+**** Source file if exist
+#+begin_src shell :tangle ~/.config/bash/rc.sh
+source_if_exists () {
+  [ -r "$1" ] && . "$1"
+}
+#+end_src
+
+**** Show colors
+#+begin_src shell :tangle ~/.config/bash/rc.sh
+colors() {
+	local fgc bgc vals seq0
+
+	printf "Color escapes are %s\n" '\e[${value};...;${value}m'
+	printf "Values 30..37 are \e[33mforeground colors\e[m\n"
+	printf "Values 40..47 are \e[43mbackground colors\e[m\n"
+	printf "Value  1 gives a  \e[1mbold-faced look\e[m\n\n"
+
+	# foreground colors
+	for fgc in {30..37}; do
+		# background colors
+		for bgc in {40..47}; do
+			fgc=${fgc#37} # white
+			bgc=${bgc#40} # black
+
+			vals="${fgc:+$fgc;}${bgc}"
+			vals=${vals%%;}
+
+			seq0="${vals:+\e[${vals}m}"
+			printf "  %-9s" "${seq0:-(default)}"
+			printf " ${seq0}TEXT\e[m"
+			printf " \e[${vals:+${vals+$vals;}}1mBOLD\e[m"
+		done
+		echo; echo
+	done
+}
+#+end_src
+
+*** Completions
+#+begin_src shell :tangle ~/.config/bash/rc.sh
+source_if_exists /usr/share/bash-completion/bash_completion
+#+end_src
+** Git
+#+begin_src conf :tangle ~/.config/git/config
+[alias]
+	hist = log --pretty=format:'%Cred%h%Creset %C(bold blue)<%an>%Creset%C(yellow)%d%Creset %Cgreen(%cr)%Creset%n%w(80,8,8)%s' --graph
+	histfull = log --pretty=format:'%Cred%h%Creset %C(bold blue)<%an>%Creset%C(yellow)%d%Creset %Cgreen(%cr)%Creset%n%w(80,8,8)%s%n' --graph --name-status
+	llog = log --pretty=format:'%C(yellow)%h %Cred%ad %Cblue%an%Cgreen%d %Creset%s' --date=iso
+	changelog = log --pretty=format:'%Cgreen%d %Creset%s' --date=iso
+	ls = log --pretty=format:'%C(yellow)%p..%h %C(white dim)%cd %<|(49,trunc)%an %C(reset)%s' --date=short --abbrev=8 --no-merges
+	lol = log --graph --decorate --pretty=oneline --abbrev-commit --all
+	co = checkout
+	br = branch
+	st = status --short
+	#what's going on, I don't even
+	anychanges = !sh -c 'git fetch' && git log --oneline HEAD..origin/$1
+	anychangesonmaster = !sh -c 'git fetch' && git log --oneline HEAD..origin/master
+	whoischanging = !sh -c 'git shortlog HEAD..origin/$0'
+	whoischangingmaster = !sh -c 'git shortlog HEAD..origin/master'
+	alias = !git config --list | grep 'alias\\.' | sed 's/alias\\.\\([^=]*\\)=\\(.*\\)/\\1 => \\2/' | grep -v 'alias'| awk 'BEGIN { FS = \"=>\" }{ printf(\"%-20s=>%s\\n\", $1,$2)}'|sort
+	#Deletes all branches that were safely merged into the master. All other are skipped (no worries).
+	cleanup = !git branch --merged=master | grep -Ev '^\\* | master$' | xargs -r git branch -d
+[core]
+	editor = vim
+	autocrlf = input
+	preloadIndex = true
+[color]
+	ui = auto
+[push]
+	default = current
+[credential]
+	helper = cache
+#+end_src
+** Redshift
+#+begin_src conf :tangle ~/.config/redshift.conf
+[redshift]
+location-provider=manual
+
+[manual]
+lat=50.06
+lon=19.94
+#+end_src
+
+** X window system
+
+#+begin_src shell :shebang #!/bin/bash :tangle ~/.config/X11/clientrc
+# Executed by startx (run your window manager from here)
+
+userresources=$HOME/.config/X11/Xresources
+usermodmap=$HOME/.config/X11/Xmodmap
+sysresources=/etc/X11/xinit/.Xresources
+sysmodmap=/etc/X11/xinit/.Xmodmap
+
+SESSION=${1:-xfce-session}
+
+# merge in defaults and keymaps
+[ -f "$sysresources"  ] && xrdb -merge "$sysresources"
+[ -f "$userresources" ] && xrdb -merge "$userresources"
+
+[ -f "$sysmodmap"  ] && xmodmap "$sysmodmap"
+[ -f "$usermodmap" ] && xmodmap "$usermodmap"
+# start some nice programs
+
+if [ -d /etc/X11/xinit/xinitrc.d ] ; then
+    for f in /etc/X11/xinit/xinitrc.d/?*.sh ; do
+        [ -x "$f" ] && . "$f"
+    done
+    unset f
+fi
+
+get_session(){
+	local dbus_args=(--sh-syntax --exit-with-session)
+	case "$1" in
+		awesome) dbus_args+=(awesome) ;;
+		bspwm) dbus_args+=(bspwm-session) ;;
+		budgie) dbus_args+=(budgie-desktop) ;;
+		cinnamon) dbus_args+=(cinnamon-session) ;;
+		deepin) dbus_args+=(startdde) ;;
+		enlightenment) dbus_args+=(enlightenment_start) ;;
+		fluxbox) dbus_args+=(startfluxbox) ;;
+		gnome) dbus_args+=(gnome-session) ;;
+		i3|i3wm) dbus_args+=(i3 --shmlog-size 0) ;;
+		jwm) dbus_args+=(jwm) ;;
+		kde) dbus_args+=(startplasma-x11) ;;
+		lxde) dbus_args+=(startlxde) ;;
+		lxqt) dbus_args+=(lxqt-session) ;;
+		mate) dbus_args+=(mate-session) ;;
+		xfce) dbus_args+=(xfce4-session) ;;
+		openbox) dbus_args+=(openbox-session) ;;
+		,*) dbus_args+=("$1") ;;
+	esac
+
+	echo "dbus-launch ${dbus_args[*]}"
+}
+
+exec $(get_session "$1")
+#+end_src
+
+#+begin_src shell :shebang #!/bin/bash :tangle ~/.config/X11/serverrc
+#+end_src
+
+,#+begin_src conf :tangle ~/.config/X11/Xresources
+! Xft ----------------
+Xft.autohint:  0
+Xft.lcdfilter: lcddefault
+Xft.hintstyle: hintfull
+Xft.hinting:   true
+Xft.antialias: true
+Xft.dpi:       96
+Xft.rgba:      rgb
+
+,*foreground: 	#e5c7a9
+
+! color theme 		-------
+,*background: 	#292520
+,*color0:		#121418
+,*color1:		#c94234
+,*color2:		#85c54c
+,*color3:		#f5ae2e
+,*color4:		#1398b9
+,*color5:		#d0633d
+,*color6:		#509552
+,*color7:		#e5c6aa
+,*color8:		#675f54
+,*color9:		#ff645a
+,*color10:		#98e036
+,*color11:		#e0d561
+,*color12:		#5fdaff
+,*color13:		#ff9269
+,*color14:		#84f088
+,*color15:		#f6f7ec
+#+end_src
+
+**  XDG
+
+#+name: xdg-links 
+| .bashrc      | .config/bash/rc.sh      |
+| .bash_login   | .config/bash/login.sh   |
+| .bash_logout  | .config/bash/logout.sh  |
+| .bash_profile | .config/bash/profile.sh |
+| .xinitrc     | .config/X11/clientrc    |
+| .xserverrc   | .config/X11/serverrc    |
+
+#+begin_src emacs-lisp :var links=xdg-links :results silent
+(defun link-xdg (link file)
+  (let ((link (f-join "~" link))
+	(file (f-join "~" file)))
+  (unless (f-symlink? link)
+    (if (f-file? link)
+	(error "File exists: %s" link)
+      (f-symlink file link)))))
+
+
+(mapcar (lambda (row) (link-xdg (car row) (cadr row))) links)
+#+end_src

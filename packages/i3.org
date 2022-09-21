@@ -1,0 +1,572 @@
+#+begin_src shell
+mkdir -p ~/.config/i3/
+#+end_src
+
+** Key binding modifiers
+#+begin_src conf :tangle ~/.config/i3/config
+set $alt Mod1
+set $mod Mod4
+#+end_src
+
+** Set up scripts
+#+begin_src conf :tangle ~/.config/i3/config
+set $lock   ~/.config/i3/lock.sh
+set $logout ~/.config/i3/logout.sh
+#+end_src
+
+*** Logout
+#+begin_src conf :tangle ~/.config/i3/logout.sh :shebang #!/bin/bash
+i3-msg exit
+#+end_src
+
+*** Lock
+#+begin_src conf :tangle ~/.config/i3/lock.sh :shebang #!/bin/bash
+betterlockscreen --lock dim
+#+end_src
+
+** Other key-bindings
+#+begin_src conf :tangle ~/.config/i3/config
+bindsym XF86MonBrightnessUp   exec --no-startup-id ~/.config/display/change-display-brightness +
+bindsym XF86MonBrightnessDown exec --no-startup-id ~/.config/display/change-display-brightness -
+#+end_src
+
+** Configuration-related key bindings 
+#+begin_src conf :tangle ~/.config/i3/config
+# reload the configuration file
+bindsym $mod+Shift+c reload
+# restart i3 inplace (preserves your layout/session, can be used to upgrade i3)
+bindsym $mod+Shift+r restart
+#+end_src
+
+** Window title font 
+#+begin_src conf :tangle ~/.config/i3/config
+# Font for window titles. Will also be used by the bar unless a different font
+# is used in the bar {} block below.
+font pango:Input_Bold 12
+#+end_src
+
+** Program launcher
+#+begin_src conf :tangle ~/.config/i3/config
+bindsym $mod+grave exec "rofi -show-icons -modi combi -show combi -combi-modi drun"
+#+end_src
+
+** Switch window
+#+begin_src conf :tangle ~/.config/i3/config
+bindsym $alt+Tab exec "rofi -show-icons -show window"
+#+end_src
+
+** Focused windows
+#+begin_src conf :tangle ~/.config/i3/config
+# kill focused window
+bindsym $mod+Shift+q kill
+
+# Change focus
+bindsym $mod+Left  focus left
+bindsym $mod+Down  focus down
+bindsym $mod+Up    focus up
+bindsym $mod+Right focus right
+
+# Move focused window
+bindsym $mod+Shift+Left  move left
+bindsym $mod+Shift+Down  move down
+bindsym $mod+Shift+Up    move up
+bindsym $mod+Shift+Right move right
+
+#+end_src
+
+** Layout management
+#+begin_src conf :tangle ~/.config/i3/config
+hide_edge_borders both
+
+# Use Mouse+$mod to drag floating windows to their wanted position
+floating_modifier $mod
+focus_follows_mouse no
+	
+# split window
+bindsym $mod+h split h
+bindsym $mod+v split v
+
+# enter fullscreen mode for the focused container
+bindsym $mod+f fullscreen toggle
+
+# change container layout (stacked, tabbed, toggle split)
+bindsym $mod+s layout stacking
+bindsym $mod+w layout tabbed
+bindsym $mod+e layout toggle split
+
+# toggle tiling / floating
+bindsym $mod+Shift+space floating toggle
+
+# change focus between tiling / floating windows
+bindsym $mod+space focus mode_toggle
+#+end_src
+
+** Configure workspaces
+#+begin_src conf :tangle ~/.config/i3/config
+# Define names for default workspaces for which we configure key bindings later on.
+# We use variables to avoid repeating the names in multiple places.
+set $ws1  "1"
+set $ws2  "2"
+set $ws3  "3"
+set $ws4  "4"
+set $ws5  "5"
+set $ws6  "6"
+set $ws7  "7"
+set $ws8  "8"
+set $ws9  "9"
+set $ws10 "10"
+
+set $primary    "HDMI-0"
+set $secondary  "DVI-I-1"
+# switch to workspace
+bindsym $mod+Tab workspace back_and_forth
+bindsym $mod+1   workspace $ws1
+bindsym $mod+2   workspace $ws2
+bindsym $mod+3   workspace $ws3
+bindsym $mod+4   workspace $ws4
+bindsym $mod+5   workspace $ws5
+bindsym $mod+6   workspace $ws6
+bindsym $mod+7   workspace $ws7
+bindsym $mod+8   workspace $ws8
+bindsym $mod+9   workspace $ws9
+bindsym $mod+0   workspace $ws10
+
+# assign workspaces to specific monitors
+workspace $ws1  output $primary
+workspace $ws2  output $primary
+workspace $ws3  output $primary
+workspace $ws10 output $primary
+
+workspace $ws4 output $secondary
+workspace $ws5 output $secondary
+workspace $ws6 output $secondary
+
+# move focused container to workspace
+bindsym $mod+Shift+1 move container to workspace $ws1
+bindsym $mod+Shift+2 move container to workspace $ws2
+bindsym $mod+Shift+3 move container to workspace $ws3
+bindsym $mod+Shift+4 move container to workspace $ws4
+bindsym $mod+Shift+5 move container to workspace $ws5
+bindsym $mod+Shift+6 move container to workspace $ws6
+bindsym $mod+Shift+7 move container to workspace $ws7
+bindsym $mod+Shift+8 move container to workspace $ws8
+bindsym $mod+Shift+9 move container to workspace $ws9
+bindsym $mod+Shift+0 move container to workspace $ws10
+#+end_src
+
+** Modes
+
+*** TODO system mode
+#+begin_src conf :tangle ~/.config/i3/config
+set $mode_system System (l) lock, (e) logout, (r) reboot, (q) shutdown, (Esc) abort
+mode "$mode_system" {
+    bindsym l exec --no-startup-id $lock, mode "default"
+    bindsym e exec --no-startup-id $logout, mode "default"
+    bindsym r exec --no-startup-id systemctl reboot, mode "default"
+    bindsym q exec --no-startup-id systemctl poweroff -i, mode "default"
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+}
+
+bindsym $mod+Pause mode "$mode_system"
+#+end_src
+
+*** Resize mode
+#+begin_src conf :tangle ~/.config/i3/config
+mode "resize" {
+        bindsym Left  resize shrink width  10 px or 10 ppt
+        bindsym Down  resize grow   height 10 px or 10 ppt
+        bindsym Up    resize shrink height 10 px or 10 ppt
+        bindsym Right resize grow   width  10 px or 10 ppt
+
+        bindsym Return mode "default"
+        bindsym Escape mode "default"
+        bindsym $mod+r mode "default"
+}
+
+bindsym $mod+r mode "resize"
+
+#+end_src
+
+** Colors
+#+begin_src conf :tangle ~/.config/i3/config
+# window colors
+#                       border              background         text                 indicator
+client.focused          $bg-color           $bg-color          $text-color          #00ff00
+client.unfocused        $inactive-bg-color $inactive-bg-color $inactive-text-color #00ff00
+client.focused_inactive $inactive-bg-color $inactive-bg-color $inactive-text-color #00ff00
+client.urgent           $urgent-bg-color    $urgent-bg-color   $text-color          #00ff00
+
+# Colors
+# class                 border  backgr. text    indicator child_border
+client.focused          #2B83A6 #2B83A6 #FFFFFF #DDDDDD   #2B83A6
+client.focused_inactive #212121 #212121 #86888C #292D2E   #5A5A5A
+client.unfocused        #212121 #212121 #86888C #292D2E   #5A5A5A
+client.urgent           #D64E4E #D64E4E #FFFFFF #D64E4E   #D64E4E
+client.placeholder      #212121 #0C0C0C #FFFFFF #212121   #262626
+client.background       #212121
+#+end_src
+
+** Status bar
+#+begin_src conf :tangle ~/.config/i3/config
+bar {
+        position                top
+        status_command          i3blocks
+        workspace_buttons       yes
+        tray_output             $primary
+        tray_padding            0
+        colors {
+            background  #212121
+            statusline  #DDDDDD
+            separator   #666666
+
+            # class             border  backgr. text
+            focused_workspace   #2B83A6 #2B83A6 #FFFFFF
+            active_workspace    #212121 #212121 #FFFFFF
+            inactive_workspace  #212121 #212121 #86888C
+            urgent_workspace    #D64E4E #D64E4E #FFFFFF
+    }
+}
+#+end_src
+
+** Floating windows
+#+begin_src conf :tangle ~/.config/i3/config
+for_window [window_role="app"]          floating enable
+for_window [window_role="pop-up"]       floating enable
+for_window [window_role="task_dialog"]  floating enable
+
+for_window [title="Preferences$"]       floating enable
+for_window [title="Android Emulator.*"] floating enable
+for_window [class="Lxappearance"]       floating enable
+for_window [class="Shutter"]            floating enable
+
+assign [class="jetbrains-idea"]         $ws2
+assign [class="Steam"]                  $ws3
+assign [class="Telegram"]               $ws10
+#+end_src
+
+** Autostart
+#+begin_src conf :tangle ~/.config/i3/config
+exec --no-startup-id nm-applet
+exec --no-startup-id udiskie -Nt2
+exec --no-startup-id redshift
+#+end_src
+
+** i3blocks
+
+#+begin_src conf :tangle ~/.config/i3blocks/config
+[volume]
+label=VOL:
+command=./volume.sh
+interval=10
+
+[memory]
+label=MEM:
+interval=30
+command=./memory.sh
+separator=false
+
+[memory]
+label=SWAP:
+interval=30
+command=./memory.sh
+instance=swap
+
+[disk]
+LABEL=HOME: 
+interval=30
+command=./disk.sh
+ALERT_LOW=10
+
+[iface]
+interval=60
+command=./iface.sh
+color=#00FF00
+
+[nm-vpn]
+label=VPN:
+command=./vpn.sh
+interval=5
+
+[calendar]
+interval=15
+command=date '+%Y-%m-%d %H:%M'
+#+end_src
+
+*** Scripts
+
+#+begin_src shell :shebang #!/bin/sh :tangle ~/.config/i3blocks/disk.sh
+# Copyright (C) 2014 Julien Bonjean <julien@bonjean.info>
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+DIR="${DIR:-$BLOCK_INSTANCE}"
+DIR="${DIR:-$HOME}"
+ALERT_LOW="${ALERT_LOW:-$1}"
+ALERT_LOW="${ALERT_LOW:-10}" # color will turn red under this value (default: 10%)
+
+LOCAL_FLAG="-l"
+if [ "$1" = "-n" ] || [ "$2" = "-n" ]; then
+    LOCAL_FLAG=""
+fi
+
+df -h -P $LOCAL_FLAG "$DIR" | awk -v label="$LABEL" -v alert_low=$ALERT_LOW '
+/\/.*/ {
+	# full text
+	print label $4
+	# short text
+	print label $4
+	use=$5
+	# no need to continue parsing
+	exit 0
+}
+END {
+	gsub(/%$/,"",use)
+	if (100 - use < alert_low) {
+		# color
+		print "#FF0000"
+	}
+}
+'
+#+end_src
+#+begin_src shell :shebang #!/bin/sh :tangle ~/.config/i3blocks/iface.sh
+# Copyright (C) 2014 Julien Bonjean <julien@bonjean.info>
+# Copyright (C) 2014 Alexander Keller <github@nycroth.com>
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+#------------------------------------------------------------------------
+
+# Use the provided interface, otherwise the device used for the default route.
+IF="${IFACE:-$BLOCK_INSTANCE}"
+IF="${IF:-$(ip route | awk '/^default/ { print $5 ; exit }')}"
+
+# Exit if there is no default route
+[[ -z "$IF" ]] && exit
+
+#------------------------------------------------------------------------
+
+# As per #36 -- It is transparent: e.g. if the machine has no battery or wireless
+# connection (think desktop), the corresponding block should not be displayed.
+[[ ! -d /sys/class/net/${IF} ]] && exit
+
+#------------------------------------------------------------------------
+
+AF=${ADDRESS_FAMILY:-inet6?}
+LABEL="${LABEL:-}"
+
+for flag in "$1" "$2"; do
+  case "$flag" in
+    -4)
+      AF=inet ;;
+    -6)
+      AF=inet6 ;;
+    -L)
+      if [[ "$IF" = "" ]]; then
+        LABEL="iface "
+      else
+        LABEL="$IF: "
+      fi ;;
+  esac
+done
+
+if [[ "$IF" = "" ]] || [[ "$(cat /sys/class/net/$IF/operstate)" = 'down' ]]; then
+  echo "${LABEL}down" # full text
+  echo "${LABEL}down" # short text
+  echo \#FF0000 # color
+  exit
+fi
+
+# if no interface is found, use the first device with a global scope
+IPADDR=$(ip addr show $IF | perl -n -e "/$AF ([^ \/]+).* scope global/ && print \$1 and exit")
+
+case $BLOCK_BUTTON in
+  3) echo -n "$IPADDR" | xclip -q -se c ;;
+esac
+
+#------------------------------------------------------------------------
+
+echo "$LABEL$IPADDR" # full text
+echo "$LABEL$IPADDR" # short text
+#+end_src
+#+begin_src shell :shebang #!/bin/sh :tangle ~/.config/i3blocks/memory.sh
+# Copyright (C) 2014 Julien Bonjean <julien@bonjean.info>
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+TYPE="${BLOCK_INSTANCE:-mem}"
+
+awk -v type=$TYPE '
+/^MemTotal:/ {
+	mem_total=$2
+}
+/^MemFree:/ {
+	mem_free=$2
+}
+/^Buffers:/ {
+	mem_free+=$2
+}
+/^Cached:/ {
+	mem_free+=$2
+}
+/^SwapTotal:/ {
+	swap_total=$2
+}
+/^SwapFree:/ {
+	swap_free=$2
+}
+END {
+	if (type == "swap") {
+		free=swap_free/1024/1024
+		used=(swap_total-swap_free)/1024/1024
+		total=swap_total/1024/1024
+	} else {
+		free=mem_free/1024/1024
+		used=(mem_total-mem_free)/1024/1024
+		total=mem_total/1024/1024
+	}
+
+	pct=0
+	if (total > 0) {
+		pct=used/total*100
+	}
+
+	# full text
+	printf("%.1fG/%.1fG (%.f%%)\n", used, total, pct)
+
+	# short text
+	printf("%.f%%\n", pct)
+
+	# color
+	if (pct > 90) {
+		print("#FF0000")
+	} else if (pct > 80) {
+		print("#FFAE00")
+	} else if (pct > 70) {
+		print("#FFF600")
+	}
+}
+' /proc/meminfo
+#+end_src
+#+begin_src shell :shebang #!/bin/sh :tangle ~/.config/i3blocks/volume.sh
+# Copyright (C) 2014 Julien Bonjean <julien@bonjean.info>
+# Copyright (C) 2014 Alexander Keller <github@nycroth.com>
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+#------------------------------------------------------------------------
+
+# The second parameter overrides the mixer selection
+# For PulseAudio users, eventually use "pulse"
+# For Jack/Jack2 users, use "jackplug"
+# For ALSA users, you may use "default" for your primary card
+# or you may use hw:# where # is the number of the card desired
+if [[ -z "$MIXER" ]] ; then
+    MIXER="default"
+    if command -v pulseaudio >/dev/null 2>&1 && pulseaudio --check ; then
+        # pulseaudio is running, but not all installations use "pulse"
+        if amixer -D pulse info >/dev/null 2>&1 ; then
+            MIXER="pulse"
+        fi
+    fi
+    [ -n "$(lsmod | grep jack)" ] && MIXER="jackplug"
+    MIXER="${2:-$MIXER}"
+fi
+
+# The instance option sets the control to report and configure
+# This defaults to the first control of your selected mixer
+# For a list of the available, use `amixer -D $Your_Mixer scontrols`
+if [[ -z "$SCONTROL" ]] ; then
+    SCONTROL="${BLOCK_INSTANCE:-$(amixer -D $MIXER scontrols |
+                      sed -n "s/Simple mixer control '\([^']*\)',0/\1/p" |
+                      head -n1
+                    )}"
+fi
+
+# The first parameter sets the step to change the volume by (and units to display)
+# This may be in in % or dB (eg. 5% or 3dB)
+if [[ -z "$STEP" ]] ; then
+    STEP="${1:-5%}"
+fi
+
+#------------------------------------------------------------------------
+
+capability() { # Return "Capture" if the device is a capture device
+  amixer -D $MIXER get $SCONTROL |
+    sed -n "s/  Capabilities:.*cvolume.*/Capture/p"
+}
+
+volume() {
+  amixer -D $MIXER get $SCONTROL $(capability)
+}
+
+format() {
+  
+  perl_filter='if (/.*\[(\d+%)\] (\[(-?\d+.\d+dB)\] )?\[(on|off)\]/)'
+  perl_filter+='{CORE::say $4 eq "off" ? "MUTE" : "'
+  # If dB was selected, print that instead
+  perl_filter+=$([[ $STEP = *dB ]] && echo '$3' || echo '$1')
+  perl_filter+='"; exit}'
+  output=$(perl -ne "$perl_filter")
+  echo "$LABEL$output"
+}
+
+#------------------------------------------------------------------------
+
+case $BLOCK_BUTTON in
+  3) amixer -q -D $MIXER sset $SCONTROL $(capability) toggle ;;  # right click, mute/unmute
+  4) amixer -q -D $MIXER sset $SCONTROL $(capability) ${STEP}+ unmute ;; # scroll up, increase
+  5) amixer -q -D $MIXER sset $SCONTROL $(capability) ${STEP}- unmute ;; # scroll down, decrease
+esac
+
+volume | format
+#+end_src
+#+begin_src shell :shebang #!/bin/sh :tangle ~/.config/i3blocks/vpn.sh
+nmcli -t connection show --active | awk -F ':' '
+/tun0/{vpn="ON"} /vpn/{name=$1}
+END{if(vpn) printf("%s\n%s\n%s\n", name, vpn, "#00FF00")}'
+#+end_src

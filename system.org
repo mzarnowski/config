@@ -1,0 +1,55 @@
+* Symlinks
+#+name: links
+| bin               |
+| .config/bash      |
+| .config/emacs     |
+| .config/git       |
+| .config/Jetbrains |
+| .config/X11       |
+
+#+begin_src elisp :var links=links :results silent
+(defun link (name)
+  (let ((from (f-join (f-parent (buffer-file-name)) "linked" "home" name))
+	(to   (f-join "~" name)))
+
+    (unless (f-symlink? to)
+      (if (f-file? to)
+	  (error "File already exists: %s" to) 
+	(f-symlink from to)))))
+
+(-map (lambda (list) (link (car list))) links)
+#+end_src
+
+* Manjaro
+
+#+name: manjaro-packages
+|----------|
+| cmake    |
+|----------|
+| i3-wm    |
+| i3blocks |
+| i3status |
+| rofi     |
+|----------|
+| redshift |
+|----------|
+| tree     |
+|          |
+
+Build:
+ | betterlockscreen  |
+ | google-chrome     |
+ | jetbrains-toolbox |
+
+** File Layout
+#+begin_src shell :results silent
+mkdir -p ~/workspace/{mzarnowski,sources}
+#+end_src 
+
+** Disable system beep
+#+begin_src shell :dir "/sudo::/etc/modprobe.d/" :results silent
+echo "blacklist pcspkr" | sudo tee nobeep.conf
+#+end_src
+
+
+

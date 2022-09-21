@@ -1,0 +1,28 @@
+[alias]
+	hist = log --pretty=format:'%Cred%h%Creset %C(bold blue)<%an>%Creset%C(yellow)%d%Creset %Cgreen(%cr)%Creset%n%w(80,8,8)%s' --graph
+	histfull = log --pretty=format:'%Cred%h%Creset %C(bold blue)<%an>%Creset%C(yellow)%d%Creset %Cgreen(%cr)%Creset%n%w(80,8,8)%s%n' --graph --name-status
+	llog = log --pretty=format:'%C(yellow)%h %Cred%ad %Cblue%an%Cgreen%d %Creset%s' --date=iso
+	changelog = log --pretty=format:'%Cgreen%d %Creset%s' --date=iso
+	ls = log --pretty=format:'%C(yellow)%p..%h %C(white dim)%cd %<|(49,trunc)%an %C(reset)%s' --date=short --abbrev=8 --no-merges
+	lol = log --graph --decorate --pretty=oneline --abbrev-commit --all
+	co = checkout
+	br = branch
+	st = status --short
+	#what's going on, I don't even
+	anychanges = !sh -c 'git fetch' && git log --oneline HEAD..origin/$1
+	anychangesonmaster = !sh -c 'git fetch' && git log --oneline HEAD..origin/master
+	whoischanging = !sh -c 'git shortlog HEAD..origin/$0'
+	whoischangingmaster = !sh -c 'git shortlog HEAD..origin/master'
+	alias = !git config --list | grep 'alias\\.' | sed 's/alias\\.\\([^=]*\\)=\\(.*\\)/\\1 => \\2/' | grep -v 'alias'| awk 'BEGIN { FS = \"=>\" }{ printf(\"%-20s=>%s\\n\", $1,$2)}'|sort
+	#Deletes all branches that were safely merged into the master. All other are skipped (no worries).
+	cleanup = !git branch --merged=master | grep -Ev '^\\* | master$' | xargs -r git branch -d
+[core]
+	editor = vim
+	autocrlf = input
+	preloadIndex = true
+[color]
+	ui = auto
+[push]
+	default = current
+[credential]
+	helper = cache
