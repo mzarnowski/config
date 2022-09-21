@@ -465,6 +465,12 @@ The *[[https://github.com/rejeep/f.el][f]]* library simplifies working with file
 
 *** TODO Reconfigure describe (C-h C-h) in sly mode
 
+* Functions
+#+begin_src emacs-lisp
+(defun uuid ()
+  (string-trim (shell-command-to-string "uuidgen")))
+#+end_src
+
 * Security
 
 ** Allow setting symmetric-encryption-only easily
