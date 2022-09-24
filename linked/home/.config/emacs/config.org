@@ -590,31 +590,37 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 *** org-roam
 
 #+BEGIN_SRC emacs-lisp
-  (use-package org-roam
-    :custom
-    (org-roam-directory "~/workspace/mzarnowski/org/notes")
-    (org-roam-dailies-directory "journal/")
-    (org-node-completions-everywhere t)
-    :bind
-    (("C-c n f" . org-roam-node-find    )
-     ("C-c n i" . org-roam-node-insert  )
-     ("C-c n l" . org-roam-buffer-toggle)
-     ;; configure roam-dailies
-     ("C-c n d" . org-roam-dailies-map  )
-     :map org-roam-dailies-map
-     ("Y" . org-roam-dailies-capture-yesterday)
-     ("T" . org-roam-dailies-capture-tomorrow ))
-    :config
-    (require 'org-roam-dailies)
-    (setq org-roam-capture-templates
-          '(("P" "public" plain "%?"
-             :target     (file+head "%(org-id-uuid).org" "#+title: ${title}\n")
-             :unnarrowed t)
-            ("p" "private" plain "%?"
-             :target     (file+head "%(org-id-uuid).org.gpg" "#+title: ${title}\n")
-             :unnarrowed t)))
-    (setq org-return-follows-link t)
-    (org-roam-setup))
+(defun org-roam-file-path ()
+  (let* ((uuid (uuid))
+	 (prefix (substring uuid 0 2))
+	 (suffix (substring uuid 2)))
+    (concat prefix "/" suffix)))
+
+(use-package org-roam
+  :custom
+  (org-roam-directory "~/workspace/mzarnowski/org/notes")
+  (org-roam-dailies-directory "journal/")
+  (org-node-completions-everywhere t)
+  :bind
+  (("C-c n f" . org-roam-node-find    )
+   ("C-c n i" . org-roam-node-insert  )
+   ("C-c n l" . org-roam-buffer-toggle)
+   ;; configure roam-dailies
+   ("C-c n d" . org-roam-dailies-map  )
+   :map org-roam-dailies-map
+   ("Y" . org-roam-dailies-capture-yesterday)
+   ("T" . org-roam-dailies-capture-tomorrow ))
+  :config
+  (require 'org-roam-dailies)
+  (setq org-roam-capture-templates
+        '(("P" "public" plain "%?"
+           :target     (file+head "%(org-roam-file-path).org"     "#+title: ${title}\n")
+           :unnarrowed t)
+          ("p" "private" plain "%?"
+           :target     (file+head "%(org-roam-file-path).org.gpg" "#+title: ${title}\n")
+           :unnarrowed t)))
+  (setq org-return-follows-link t)
+  (org-roam-setup))
 #+END_SRC
 
 * RSS
