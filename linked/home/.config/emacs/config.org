@@ -577,6 +577,8 @@ the popup for selecting targets from all matching keys. If set to nil, all match
         org-src-tab-acts-natively        t
         org-src-fontify-natively         t
         org-confirm-babel-evaluate       nil)
+  (setq org-agenda-file-regexp "\\`[^.].*\\.org\\(\\.gpg\\)?\\'"
+	org-agenda-files  '("~/workspace/mzarnowski/org/notes/journal"))
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((shell . t)))
