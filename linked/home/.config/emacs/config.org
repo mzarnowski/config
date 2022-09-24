@@ -619,6 +619,9 @@ the popup for selecting targets from all matching keys. If set to nil, all match
           ("p" "private" plain "%?"
            :target     (file+head "%(org-roam-file-path).org.gpg" "#+title: ${title}\n")
            :unnarrowed t)))
+  (setq org-roam-dailies-capture-templates
+	`(("d" "default" entry "* %?"
+	   :target (file+head "%<%Y-%m-%d>.org.gpg" "#+title: %<%Y-%m-%d>\n"))))
   (setq org-return-follows-link t)
   (org-roam-setup))
 #+END_SRC
