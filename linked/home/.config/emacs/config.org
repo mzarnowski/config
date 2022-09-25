@@ -316,22 +316,22 @@ The *helpful* package describes various symbols much
 better than the vanilla package.
 
 #+BEGIN_SRC emacs-lisp
-  (use-package helpful
-    :commands (helpful-callable helpful-variable helpful-command helpful-key)
-    :config
-    (general-define-key "C-h C-h" 'helpful-at-point)
-    (setq helpful-switch-buffer-function #'init/try-reuse-helpful-window)
-    :bind
-    ([remap describe-function] . helpful-callable)
-    ([remap describe-variable] . helpful-variable)
-    ([remap describe-command ] . helpful-command )
-    ([remap describe-symbol  ] . helpful-symbol  )					  
-    ([remap describe-key     ] . helpful-key     ))
-  :init
-  (defun init/try-reuse-helpful-window (buffer)
-    (if (eq major-mode 'helpful-mode)
-        (switch-to-buffer buffer)
-      (pop-to-buffer buffer)))
+(use-package helpful
+  :commands (helpful-callable helpful-variable helpful-command helpful-key)
+  :config
+  (setq helpful-switch-buffer-function #'init/try-reuse-helpful-window)
+  :bind
+  ([remap describe-function] . helpful-callable)
+  ([remap describe-variable] . helpful-variable)
+  ([remap describe-command ] . helpful-command )
+  ([remap describe-symbol  ] . helpful-symbol  )
+  ([remap help-for-help    ] . helpful-at-point)
+  ([remap describe-key     ] . helpful-key     ))
+
+(defun init/try-reuse-helpful-window (buffer)
+  (if (eq major-mode 'helpful-mode)
+      (switch-to-buffer buffer)
+    (pop-to-buffer buffer)))
 #+END_SRC
 
 The reusing of helpful window comes from [[https://d12frosted.io/posts/2019-06-26-emacs-helpful.html][this blog post]].
