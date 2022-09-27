@@ -56,9 +56,9 @@
           modus-themes-markup   '(intense background) ;; e.g. =verbatim= or ~code~
           modus-themes-links    '(faint italic background))
     (setq modus-themes-headings
-          '((1 . (background overline  1.7 variable-pitch))
-            (2 . (background overline  1.5 variable-pitch))
-            (3 . (background overline  1.3))
+          '((1 . (background overline  1.3 variable-pitch))
+            (2 . (background overline  1.2 variable-pitch))
+            (3 . (background overline  1.15))
             (4 . (background overline  1.1))
             (t . (monochrome))))
     (setq modus-themes-completions
