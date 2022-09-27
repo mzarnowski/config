@@ -494,6 +494,14 @@ This can be later used in =use-package= as ~:hook (mode . (lambda () (gpg/encryp
 Additionally, by setting ~(setq epa-file-select-keys nil)~ (e.g. globally for mode) we can avoid
 the popup for selecting targets from all matching keys. If set to nil, all matches will be used.
 
+* Software
+** Clojure
+#+begin_src elisp
+(use-package clojure-mode
+  :config
+  (use-package cider
+    :hook ((cider-repl-mode cider-mode) . eldoc-mode)))
+#+end_src
 * Major Modes
 ** dired-mode
 
