@@ -461,6 +461,10 @@ The *[[https://github.com/rejeep/f.el][f]]* library simplifies working with file
 #+end_src
 
 *** TODO Reconfigure describe (C-h C-h) in sly mode
+** Clojure
+#+begin_src emacs-lisp
+(use-package cider)
+#+end_src
 
 * Security
 
