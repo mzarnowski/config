@@ -705,3 +705,74 @@ This will only work for projects, so we still need to
 *** TODO [[https://cyberthal-ghost.nfshost.com/alternatives-to-the-desk-how-to-vary-computing-posture-for-extended-endurance/][Posture]]
 ** Blogs
 *** [[http://www.paulgraham.com/rss.html][Paul Graham]]
+
+* org-z
+
+#+begin_src elisp
+(defun uuid () (string-trim (shell-command-to-string "uuidgen")))
+
+(defun org-z/header (level text)
+  (concat (s-repeat level "*") " " text))
+
+(defvar org-z/root nil "Root directory containing org-z directories")
+
+(defvar org-z/fleeting-node-template "%(org-z/header 1 \"TODO ${title}\")
+:PROPERTIES:
+:ID: %(uuid)
+:SOURCE: TODO
+:END:
+
+%?
+")
+
+(defvar org-z/permanent-node-template "%(org-z/header 1 \"${title}\")
+:PROPERTIES:
+:ID: %(uuid)
+:END:
+
+%?
+
+%(org-z/header 2 \"Questions\")
+")
+
+(defun org-z/available-collections (path)
+  (when (f-exists? path)
+    (mapcar #'f-filename (f-directories path))))
+
+(defun org-z/mkdir (&rest directories)
+  (apply #'f-mkdir directories)
+  (apply #'f-join  directories))
+
+(defun org-z/become (path)
+    (setq org-roam-directory (org-z/mkdir path "notes"))
+    (setq org-agenda-files   (list org-roam-directory))
+    (org-roam-db-sync))
+
+(defun org-z/become-new (path)
+    (f-mkdir-full-path path)
+    (list "TODO")
+    (org-z/become path))
+
+(defun org-z/select-collection (root)
+  (completing-read "Find Z-collection: " (org-z/available-collections org-z/root)))
+
+(defun org-z-become ()
+  (interactive)
+  (let ((selected (f-join org-z/root (org-z/select-collection org-z/root))))
+    (if (f-directory? selected)
+	(org-z/become selected)
+      (org-z/become-new selected))))
+
+(setq org-agenda-file-regexp (rx (and (zero-or-more ".") ".org" (optional ".gpg"))))
+
+(setq org-roam-capture-templates
+      `(
+	("f" "Fleeting Note"
+	 entry ,org-z/fleeting-node-template
+	 :target (file+olp "%<%Y>.org.gpg" ("Fleeting Notes %<%Y>")))
+	("p" "Permanent Note"
+	 entry ,org-z/permanent-node-template
+	 :target (file+olp "%<%Y>.org.gpg" ("Permanent Notes %<%Y>")))
+	))
+#+end_src
+
