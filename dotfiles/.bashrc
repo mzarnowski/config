@@ -2,9 +2,6 @@
 # ~/.bashrc
 #
 
-# If not running interactively, don't do anything
-[[ $- != *i* ]] && return
-
 source_all(){
     local directory=$1
     [[ -d "${directory}" ]] || return
@@ -16,6 +13,9 @@ source_all(){
 }
 
 source_all ${HOME}/.config/bash
+
+# If not running interactively, don't do anything
+[[ $- != *i* ]] && return
 
 colors() {
 	local fgc bgc vals seq0
