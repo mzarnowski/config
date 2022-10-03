@@ -36,7 +36,7 @@ TIME="\$(date +%H:%M)"
 DIRECTORY="${BLUE}\$(pwd) ${BYELLOW}${GIT_REF}${DEFAULT}"
 USER_AND_HOST="${GREEN}${USER}${CYAN}@${GREEN}${HOSTNAME}${DEFAULT}"
 
-LEN_SEP=7               # length of separators
+LEN_SEP=6               # length of separators
 LEN_TIME=4              # hour + minutes
 LEN_PWD="\$(pwd             | wc -c)"
 LEN_GIT="\$(echo ${GIT_REF} | wc -c)"
