@@ -1,8 +1,0 @@
-   _complete_shellw(){
-      export COMP_CWORD
-      export COMP_LINE
-   
-      COMPREPLY=($(shellw-tools "complete" bash "$1"))
-   }
-   
-   complete -F _complete_shellw rss
