@@ -1,3 +1,3 @@
-PATH="${PATH}:${HOME}/bin"
+PATH="${PATH}:${HOME}/bin/local:${HOME}/bin"
 
 export PATH
