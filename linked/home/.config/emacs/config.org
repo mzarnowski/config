@@ -593,6 +593,7 @@ the popup for selecting targets from all matching keys. If set to nil, all match
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((shell . t)))
+  (use-package doct)
   (use-package org-superstar ;; nicer bullets
     :config
     (setq org-superstar-special-todo-items t)
