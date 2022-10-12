@@ -291,29 +291,29 @@ or
 ** User-friendly minibuffer
 
 #+BEGIN_SRC emacs-lisp
-  (use-package vertico
+(use-package vertico
+  :init
+  (vertico-mode)
+  :custom
+  (vertico-cycle t)
+  :config
+  (use-package embark ;; mini-buffer actions
+    :bind
+    (("C-."    . embark-act     )
+     ("<menu>" . embark-act     )
+     ("C->"    . embark-become  )
+     ("M-."    . embark-dwim    )
+     ("C-h B"  . embark-bindings))
     :init
-    (vertico-mode)
-    :custom
-    (vertico-cycle t)
+    (setq prefix-help-command #'embark-prefix-help-command))
+  (use-package savehist ;; remembers previous commands
+    :init
+    (savehist-mode)
     :config
-    (use-package embark ;; mini-buffer actions
-      :bind
-      (("C-."    . embark-act     )
-       ("<menu>" . embark-act     )
-       ("C->"    . embark-become  )
-       ("M-."    . embark-dwim    )
-       ("C-h B"  . embark-bindings))
-      :init
-      (setq prefix-help-command #'embark-prefix-help-command))
-    (use-package savehist ;; remembers previous commands
-      :init
-      (savehist-mode)
-      :config
-      (setq history-length 256))
-    (use-package marginalia ;; provides more contextual info
-      :init
-      (marginalia-mode)))
+    (setq history-length 256))
+  (use-package marginalia ;; provides more contextual info
+    :init
+    (marginalia-mode)))
 #+END_SRC
 
 ** Colorful parenthesis
