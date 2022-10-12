@@ -220,6 +220,14 @@ Let's have the clean buffers
   :init
   (corfu-doc-mode))
 
+(defun corfu-enable-in-minibuffer ()
+  "Enable Corfu in the minibuffer if `completion-at-point' is bound."
+  (when (where-is-internal #'completion-at-point (list (current-local-map)))
+    ;; (setq-local corfu-auto nil) Enable/disable auto completion
+    (corfu-mode 1)))
+
+;; enable corfu for the eval (M-:) minibuffer
+(add-hook 'minibuffer-setup-hook #'corfu-enable-in-minibuffer)
 #+END_SRC
 
 ** Configure file backups
