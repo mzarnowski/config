@@ -208,6 +208,11 @@ Let's have the clean buffers
   (setq corfu-cycle           t)
   (setq corfu-separator       ?\s)
   (setq corfu-preselect-first nil)
+  :bind
+  (:map corfu-map
+	("SPC" . corfu-insert-separator)
+	("<tab>" . corfu-next)
+        ("<backtab>" . corfu-previous))
   :init
   (global-corfu-mode))
 
