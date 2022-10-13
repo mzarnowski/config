@@ -111,18 +111,6 @@ Sadly, this doesn't seem to work in terminal
 (setq initial-scratch-message "")
 #+end_src
 
-**** Show line numbers
-
-Additionally, there is a small function to disable the
-line numbers in some modes (e.g. dired / eshell)
-
-#+BEGIN_SRC emacs-lisp
-  (global-display-line-numbers-mode t)
-
-  (defun init/disable-line-numbers (mode)
-    (add-hook mode (lambda () (display-line-numbers-mode 0))))
-#+END_SRC
-
 **** Highlight current line
 #+BEGIN_SRC emacs-lisp
 (global-hl-line-mode t)
@@ -555,15 +543,6 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 #+END_SRC
 
 ** various term modes
-
-*** Disable line numbers in term modes
-
-#+BEGIN_SRC emacs-lisp
-  (init/disable-line-numbers 'term-mode-hook)
-  (init/disable-line-numbers 'vterm-mode-hook)
-  (init/disable-line-numbers 'shell-mode-hook)
-  (init/disable-line-numbers 'eshell-mode-hook)
-#+END_SRC
 
 *** Disable line highlighting in term modes
 #+begin_src emacs-lisp
