@@ -732,6 +732,7 @@ This will only work for projects, so we still need to
 *** TODO [[https://with-emacs.com/posts/tutorials/almost-all-you-need-to-know-about-variables/][emacs variables]]
 *** TODO [[https://with-emacs.com/posts/tips/quit-current-context/][quit minibuffer from other window]]
 *** TODO [[https://xenodium.com/emacs-edit-after-org-block-completion/][org-mode complete]]
+*** TODO [[https://github.com/emacs-citar/citar][citations]]
 *** TODO [[https://yannesposito.com/posts/0022-org-agenda-on-your-startup-page/index.html][org-agenda on startup page]]
 *** TODO Better config organization: [[https://d12frosted.io/posts/2021-04-09-emacs-d.html][blog]] and [[https://github.com/d12frosted/environment][git repo]]
 *** TODO Task management in org-roam:
