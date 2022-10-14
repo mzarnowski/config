@@ -407,6 +407,17 @@ to jump to any visible character directly
     :bind ("C-h w" . #'mw-thesaurus-lookup-dwim))
 #+END_SRC
 
+* System integration
+** Volume management
+#+begin_src emacs-lisp
+(use-package volume
+  :bind
+  ("<XF86AudioRaiseVolume>"   . (lambda () (interactive) (volume-raise 5)))
+  ("<XF86AudioLowerVolume>"   . (lambda () (interactive) (volume-lower 5)))
+  ("S-<XF86AudioRaiseVolume>" . (lambda () (interactive) (volume-raise 10)))
+  ("S-<XF86AudioLowerVolume>" . (lambda () (interactive) (volume-lower 10)))
+  ("C-<XF86AudioLowerVolume>" . volume-minimize))
+#+end_src
 * Software Development
 
 ** Elisp
