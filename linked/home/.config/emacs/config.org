@@ -187,6 +187,7 @@ Let's have the clean buffers
 * User experience
 ** Completion
 
+*** Popup completions
 #+BEGIN_SRC emacs-lisp
 (setq tab-always-indent 'complete) ;; indent if needed, then complete
 
@@ -218,6 +219,17 @@ Let's have the clean buffers
 (add-hook 'minibuffer-setup-hook #'corfu-enable-in-minibuffer)
 #+END_SRC
 
+*** Completion with previews
+#+begin_src emacs-lisp
+  ;; -*- lexical-binding: t -*-
+(use-package consult
+  :bind (("C-c h" . consult-history)
+	 ("C-x b" . consult-buffer)
+	 ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
+	 ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
+	 ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
+	 ))
+#+end_src
 ** Configure file backups
 
 #+BEGIN_SRC emacs-lisp
