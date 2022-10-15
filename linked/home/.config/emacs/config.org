@@ -530,21 +530,24 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 ** dired-mode
 
 #+BEGIN_SRC emacs-lisp
-  (use-package dired
-    :ensure nil ; not to be downloaded
-    :commands (dired dired-jump)
-    :custom
-    (dired-listing-switches "-agho --group-directories-first")
+(use-package dired
+  :ensure nil ; not to be downloaded
+  :commands (dired dired-jump)
+  :custom
+  (dired-listing-switches "-agho --group-directories-first")
+  :config
+  (use-package dired-single) ;; reuse dired buffer
+  (define-key dired-mode-map [remap dired-find-file] 'dired-single-buffer)
+  (define-key dired-mode-map [remap dired-mouse-find-file-other-window] 'dired-single-buffer-mouse)
+  (define-key dired-mode-map [remap dired-up-directory] 'dired-single-up-directory)
+  (use-package all-the-icons-dired
+    :if (display-graphic-p)
     :config
-    (use-package dired-single) ;; reuse dired buffer
-    (define-key dired-mode-map [remap dired-find-file] 'dired-single-buffer)
-    (define-key dired-mode-map [remap dired-mouse-find-file-other-window] 'dired-single-buffer-mouse)
-    (define-key dired-mode-map [remap dired-up-directory] 'dired-single-up-directory)
-    (use-package treemacs-icons-dired 
-      :if (display-graphic-p)
-      :hook (dired-mode . treemacs-icons-dired-mode))
-    (use-package dired-collapse ;; collapse directories with only one child into e.g. foo/bar/baz.txt
-      :hook (dired-mode . dired-collapse-mode)))
+    (setq all-the-icons-dired-monochrome nil)
+    :init
+    (add-hook 'dired-mode-hook 'all-the-icons-dired-mode))
+  (use-package dired-collapse ;; collapse directories with only one child into e.g. foo/bar/baz.txt
+    :hook (dired-mode . dired-collapse-mode)))
 #+END_SRC
 
 
