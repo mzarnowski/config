@@ -1,0 +1,10 @@
+*
+
+!.gitignore
+!config.org
+!feeds.org.gpg
+!init.el
+
+!extensions/
+!extensions/*.el
+
