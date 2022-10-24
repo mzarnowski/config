@@ -62,8 +62,8 @@
             (4 . (background overline  1.1))
             (t . (monochrome))))
     (setq modus-themes-completions
-          '((matches   . (extrabold background ))
-            (selection . (semibold accented ))
+          '((matches   . (extrabold background))
+            (selection . (semibold accented))
             (popup     . (accented))))
     :config
     :bind ("<f5>" . modus-themes-toggle))
