@@ -25,8 +25,48 @@
 (defvar workspace/root    "~/workspace")
 (defvar workspace/current "mzarnowski")
 
-(defun workspace/file (name)
+(defun workspace/path (name)
   (f-join workspace/root workspace/current name))
+
+(defun workspace/current-file (directory)
+  (let ((filename (format-time-string "%Y" (current-time))))
+    (workspace/path (format "%s/%s.org.gpg" directory filename))))
+
+;; agenda
+
+(defun workspace/agenda-directory ()
+  (workspace/path "agenda"))
+
+(defun workspace/agenda-current-file ()
+  (workspace/current-file "agenda"))
+
+(defun workspace/agenda-template (header scheduled-on deadlined-on)
+  (let ((properties (-non-nil `(,(when scheduled-on (concat "SCHEDULED: " scheduled-on))
+                                ,(when deadlined-on (concat "DEADLINE: "  deadlined-on))))))
+    (s-join "\n" (cons header properties))))
+
+(transient-define-suffix workspace/capture-agenda (&optional args)
+  (interactive (list (transient-args transient-current-command)))
+  (let* ((scheduled-on (when args (transient-arg-value "--since=" args)))
+         (deadlined-on (when args (transient-arg-value "--deadline=" args)))
+         (template (workspace/agenda-template "* TODO %?" scheduled-on deadlined-on))
+         (file     (workspace/agenda-current-file)))
+    (let ((org-capture-templates (doct `("Agenda" :keys "a" :file ,file :template ,template))))
+      (org-capture nil "a"))))
+
+(transient-define-suffix workspace/open-agenda (&optional args)
+  (interactive (list (transient-args transient-current-command)))
+  (let ((org-agenda-files (list (workspace/agenda-directory))))
+    (org-agenda)))
+
+(transient-define-prefix workspace-agenda-menu ()
+  ["Schedule"
+   ("s" "since" "--since=" :reader (lambda (a b c) (org-read-date)))
+   ("d" "deadline" "--deadline=" :reader (lambda (a b c) (org-read-date)))]
+  ["Agenda actions"
+   ("a" "show agenda" workspace/open-agenda)
+   ("n" "new entry" workspace/capture-agenda)
+   ("q" "quit" transient-quit-all)])
 
 ;; journal
 
@@ -35,11 +75,10 @@
 				'("%Y" "%Y-%m" "%Y-%m-%d"))))
 
 (defun workspace/current-journal-file ()
-  (let ((filename (format-time-string "%Y" (current-time))))
-    (workspace/file (format "journal/%s.org.gpg" filename))))
+  (workspace/current-file "journal"))
 
-
-(defun workspace/capture-journal ()
+(transient-define-suffix workspace/capture-journal (&optional args)
+  (interactive (list (transient-args transient-current-command)))
   (let* ((file     (workspace/current-journal-file))
 	 (org-capture-templates (doct `("Journal"
 					:keys "j"
@@ -48,20 +87,21 @@
 					:template "* %<%H:%M> %?"))))
       (org-capture nil "j")))
 
-(defun workspace/open-journal ()
-  (find-file (workspace/current-journal-file)))
-    
+(transient-define-suffix  workspace/open-journal (&optional args)
+  (interactive (list (transient-args transient-current-command)))
+  (find-file (workspace/current-journal-file)))    
+
+(transient-define-prefix workspace-journal-menu ()
+  ["Journal actions"
+   ("j"   "create" workspace/capture-journal)
+   ("RET" "open" workspace/open-journal)
+   ("q"   "quit" transient-quit-one)])
 
 ;; workspace menu
 
-(transient-define-prefix workspace-journal-menu ()
-  ["Actions"
-   ("j" "create" (lambda () (interactive) (workspace/capture-journal)))
-   ("RET" "open" (lambda () (interactive) (workspace/open-journal)))
-   ("q" "quit" transient-quit-one)])
-
 (transient-define-prefix workspace-transient-menu ()
   ["Actions"
+   ("a" "agenda" workspace-agenda-menu)
    ("j" "journal" workspace-journal-menu)
    ("q" "quit" transient-quit-one)])
 
