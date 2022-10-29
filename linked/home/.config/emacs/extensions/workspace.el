@@ -4,10 +4,10 @@
   (when (eq major-mode 'org-mode)
     (save-match-data
       (when reposition (goto-char (point-min)))
-      (unless (re-search-forward  (concat "*" headline "$") nil 'no-error)
-        (end-of-line)
-        (newline)
-        (insert headline)))))
+      (unless (re-search-forward  (concat "^" headline "$") nil 'no-error)
+	(end-of-line)
+	(newline)
+	(insert headline)))))
 
 (defun org-headline (level name)
   (let ((prefix (s-repeat (+ level 1) "*")))
@@ -19,6 +19,16 @@
       (goto-char (point-min))
       (-each headlines  #'org-find-or-create-headline)
       (org-end-of-subtree))))
+
+(defun org-find-or-create-category-headline (category)
+  "Find or create a given category headline"
+  (org-find-or-create-headline (org-headline 0 (s-capitalize category)))
+  (org-set-category category)
+  (org-end-of-subtree))
+
+(defun org-set-category (category)
+  (unless (string= category (org-entry-get-with-inheritance "CATEGORY"))
+    (org-set-property "CATEGORY" category)))
 
 ;; workspace
 
@@ -67,6 +77,41 @@
    ("a" "show agenda" workspace/open-agenda)
    ("n" "new entry" workspace/capture-agenda)
    ("q" "quit" transient-quit-all)])
+
+;; inbox
+(defun workspace/schedule-thought-refinement ()
+  (let ((date (format-time-string "<%Y-%m-%d>" (current-time)))
+	(org-blank-before-new-entry nil))
+    (goto-char (point-max)) ;; cannot be on the same line as the header
+    (re-search-backward org-heading-regexp) ;; puts us on the beginning of the line
+    (next-line)
+    (insert (concat "SCHEDULED: " date))
+    (newline 2)))
+
+(defvar workspace/before-thought-capture #'workspace/schedule-thought-refinement)
+
+(defun workspace/thought-template (file category)
+  "Captured note will automatically be scheduled for the same day"
+  (car (doct `("Default"
+	       :keys "d"
+	       :type entry
+	       :file ,file
+	       :function (lambda () (org-find-or-create-category-headline ,category))
+	       :template "* TODO %?"
+	       :prepare-finalize ,workspace/before-thought-capture))))
+
+(transient-define-suffix workspace/capture-thought (category)
+  (interactive (list (transient-args transient-current-command)))
+  (let* ((file (workspace/current-file "thoughts/inbox"))
+	 (org-capture-entry (workspace/thought-template file category)))
+    (org-capture)))
+
+(transient-define-prefix workspace-thought-capture-menu ()
+  [[("d" "default" (lambda () (interactive) (workspace/capture-thought "default")))
+    ("r" "recipe"  (lambda () (interactive) (workspace/capture-thought "recipe" )))]
+   [("b" "book"    (lambda () (interactive) (workspace/capture-thought "book"   )))]
+   [""
+    ("q" "quit" transient-quit-all)]])
 
 ;; journal
 
