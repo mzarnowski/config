@@ -144,7 +144,7 @@
 
 ;; workspace menu
 
-(transient-define-prefix workspace-transient-menu ()
+(transient-define-prefix workspace-menu ()
   ["Actions"
    ("a" "agenda" workspace-agenda-menu)
    ("j" "journal" workspace-journal-menu)

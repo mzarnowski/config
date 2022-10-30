@@ -12,4 +12,3 @@
   (find-file "~/.config/emacs/config.org"))
 
 (global-set-key (kbd "C-z e")   #'init/edit-init-config)
-(global-set-key (kbd "C-z C-z") #'workspace-transient-menu)
