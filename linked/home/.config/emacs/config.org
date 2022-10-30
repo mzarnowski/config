@@ -185,6 +185,10 @@ Let's have the clean buffers
 #+END_SRC
 
 * User experience
+** Recently visited files
+#+begin_src emacs-lisp
+(global-set-key (kbd "C-<tab>")   #'consult-recent-file)
+#+end_src
 ** Completion
 
 *** Popup completions
