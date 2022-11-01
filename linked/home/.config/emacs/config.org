@@ -425,6 +425,7 @@ to jump to any visible character directly
 ** Volume management
 #+begin_src emacs-lisp
 (use-package volume
+  :defer 3
   :bind
   ("<XF86AudioRaiseVolume>"   . (lambda () (interactive) (volume-raise 5)))
   ("<XF86AudioLowerVolume>"   . (lambda () (interactive) (volume-lower 5)))
