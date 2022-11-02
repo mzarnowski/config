@@ -144,7 +144,7 @@
 (defun workspace/thoughts-menu (project)
   (workspace/make-menu
    `("t" "capture thought" (workspace/thought-capture ,project))
-   `("r" "refine thoughts" (workspace/thought-refine  ,project))
+   `("r" "refine thoughts" (workspace/thought-browse-unrefined  ,project))
    `("RET" "open thought"  (workspace/thoughts-open   ,project))))
 
 (defun workspace/select-project ()
@@ -227,15 +227,13 @@
   "\\`[^.].*\\.org\\(\\.gpg\\)?\\'"
   "TODO")
 
-(defun org-agenda-switch-to-narrowed ()
-  (interactive)
-  (org-agenda-switch-to)
-  (org-narrow-to-subtree))
-
 (defun workspace/thought-refine ()
+  (interactive)
   "Begin refinement of the selected entry
 (at point in the agenda view)"
-  (org-agenda-switch-to-narrowed)
+  (org-agenda-switch-to)
+  (org-narrow-to-subtree)
+  (workspace/thought-refine-mode 1)
   (ignore)) ;; TODO: also, set the correct minor modes?
 
 (defun workspace/thoughts-all-files (project)
@@ -254,14 +252,33 @@
 
 (defun workspace/thought-refine-shadowed-keymap (original)
   (workspace/keymap-shadow original
-			   `("RET" . org-agenda-switch-to-narrowed)))
+			   `("RET" . workspace/thought-refine)))
 
-(defun workspace/thought-refine (&optional project)
+(defun workspace/thought-browse-unrefined (&optional project)
   (let ((files (workspace/thoughts-all-files project))
 	(org-ql-view-map (workspace/thought-refine-shadowed-keymap org-ql-view-map)))
     (org-ql-search files '(and (todo) (scheduled))
       :title "Refine thoughts")))
 
+(defun workspace/thought-refine-close ()
+  (interactive)
+  (widen)
+  (bury-buffer))
+
+(defvar workspace/thought-refine-mode-map
+  (workspace/make-menu
+   `("C-c C-c" "new note" workspace/thought-refine-close)
+   `("C-c C-k" "close" workspace/thought-refine-close))
+  "Keymap for `workspace/thought-refine-mode', a minor mode.")
+
+
+(define-minor-mode workspace/thought-refine-mode
+  "Minor mode for special key bindings in a thought capture buffer."
+  :lighter " Cap"
+  (let ((format (hm-line-format "Refine: " 'workspace/thought-refine-mode-map)))
+    (setq-local header-line-format format)))
+
+;; header/mode line
 (defun hm-line/build-key-code (prefix key-code)
   (let ((key (single-key-description key-code)))
     (if prefix (concat prefix " " key) key)))
