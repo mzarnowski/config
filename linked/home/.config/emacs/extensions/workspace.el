@@ -216,9 +216,14 @@
 
 (define-minor-mode workspace/thought-capture-mode
   "Minor mode for special key bindings in a thought capture buffer."
-  :lighter " Cap"
-  (let ((format (hm-line-format "Capture: " 'workspace/thought-capture-mode-map)))
-    (setq-local header-line-format format)))
+  :global      nil
+  :interactive nil
+  :init-value  nil
+  :lighter     " Cap"
+  (if workspace/thought-refine-mode
+      (let ((format (hm-line-format "Capture: " 'workspace/thought-capture-mode-map)))
+	(setq-local header-line-format format))
+    (progn (setq-local header-line-format nil))))
 
 ;; thought refine
 (require 'org-ql-search)
@@ -226,15 +231,6 @@
 (defvar workspace/org-file-regexp
   "\\`[^.].*\\.org\\(\\.gpg\\)?\\'"
   "TODO")
-
-(defun workspace/thought-refine ()
-  (interactive)
-  "Begin refinement of the selected entry
-(at point in the agenda view)"
-  (org-agenda-switch-to)
-  (org-narrow-to-subtree)
-  (workspace/thought-refine-mode 1)
-  (ignore)) ;; TODO: also, set the correct minor modes?
 
 (defun workspace/thoughts-all-files (project)
   (org-ql-search-directories-files
@@ -260,9 +256,23 @@
     (org-ql-search files '(and (todo) (scheduled))
       :title "Refine thoughts")))
 
+
+(defun workspace/thought-refine ()
+  (interactive)
+  "Begin refinement of the selected entry
+(at point in the agenda view)"
+  ;; TODO - open in separate window, like in org-src?
+  ;; otherwise, only one thought can be refined at a time
+  ;; ... which might be a good thing
+  (org-agenda-switch-to)
+  (org-narrow-to-subtree)
+  (workspace/thought-refine-mode 1)
+  (ignore)) ;; TODO: also, set the correct minor modes?
+
 (defun workspace/thought-refine-close ()
   (interactive)
   (widen)
+  (workspace/thought-refine-mode -1)
   (bury-buffer))
 
 (defvar workspace/thought-refine-mode-map
@@ -271,12 +281,16 @@
    `("C-c C-k" "close" workspace/thought-refine-close))
   "Keymap for `workspace/thought-refine-mode', a minor mode.")
 
-
 (define-minor-mode workspace/thought-refine-mode
   "Minor mode for special key bindings in a thought capture buffer."
-  :lighter " Cap"
-  (let ((format (hm-line-format "Refine: " 'workspace/thought-refine-mode-map)))
-    (setq-local header-line-format format)))
+  :global      nil
+  :interactive nil
+  :init-value  nil
+  :lighter     " Ref"
+  (if workspace/thought-refine-mode
+      (let ((format (hm-line-format "Refine: " 'workspace/thought-refine-mode-map)))
+	(setq-local header-line-format format))
+    (progn (setq-local header-line-format nil))))
 
 ;; header/mode line
 (defun hm-line/build-key-code (prefix key-code)
