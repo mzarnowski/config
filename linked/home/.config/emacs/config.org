@@ -501,6 +501,8 @@ The *[[https://github.com/rejeep/f.el][f]]* library simplifies working with file
   (string-trim (shell-command-to-string "uuidgen")))
 #+end_src
 
+(use-package org-ql)
+
 * Security
 
 ** Allow setting symmetric-encryption-only easily
@@ -606,8 +608,9 @@ the popup for selecting targets from all matching keys. If set to nil, all match
         org-src-tab-acts-natively        t
         org-src-fontify-natively         t
         org-confirm-babel-evaluate       nil)
-  (setq org-agenda-file-regexp "\\`[^.].*\\.org\\(\\.gpg\\)?\\'"
-	org-agenda-files  '("~/workspace/mzarnowski/org/notes/journal"))
+  (let ((org-file-regexp "\\`[^.].*\\.org\\(\\.gpg\\)?\\'"))
+    (setq org-agenda-file-regexp org-file-regexp
+	  org-ql-search-directories-files-regexp org-file-regexp))
   (unbind-key (kbd "C-c [") 'org-mode-map)
   (unbind-key (kbd "C-c ]") 'org-mode-map)
   (unbind-key (kbd "C-c ;") 'org-mode-map)
