@@ -501,8 +501,10 @@ The *[[https://github.com/rejeep/f.el][f]]* library simplifies working with file
   (string-trim (shell-command-to-string "uuidgen")))
 #+end_src
 
-(use-package org-ql)
-
+#+begin_src emacs-lisp
+(use-package org-ql
+  :defer 5)
+#+end_src
 * Security
 
 ** Allow setting symmetric-encryption-only easily

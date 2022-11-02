@@ -221,7 +221,7 @@
     (setq-local header-line-format format)))
 
 ;; thought refine
-(require 'org-ql)
+(require 'org-ql-search)
 
 (defvar workspace/org-file-regexp
   "\\`[^.].*\\.org\\(\\.gpg\\)?\\'"
