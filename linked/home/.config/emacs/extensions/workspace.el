@@ -192,7 +192,9 @@
 	(goto-char (point-max))
 	(unless (looking-at-p "^$"):
 	  (newline))
-	(insert-buffer provider)))
+	(insert-buffer provider)
+	;; assign an ID
+	(org-id-get-create)))
 
     ;; finally, kill the capture buffer
     (kill-buffer)
