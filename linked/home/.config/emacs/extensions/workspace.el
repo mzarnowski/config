@@ -165,7 +165,7 @@
 
 ;; custom thought capture
 (defun workspace/thought-capture (&optional project)
-  (let ((buffer (get-buffer-create "*thought*")))
+  (let ((buffer (generate-new-buffer "*thought*")))
     (with-current-buffer buffer
       (org-mode)
       (workspace/thought-capture-mode 1)
