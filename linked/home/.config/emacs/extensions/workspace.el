@@ -220,7 +220,7 @@
   :interactive nil
   :init-value  nil
   :lighter     " Cap"
-  (if workspace/thought-refine-mode
+  (if workspace/thought-capture-mode
       (let ((format (hm-line-format "Capture: " 'workspace/thought-capture-mode-map)))
 	(setq-local header-line-format format))
     (progn (setq-local header-line-format nil))))
