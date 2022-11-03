@@ -184,9 +184,7 @@
 
     ;; schedule refinement, unless already scheduled by the author
     (unless (org-entry-get nil "SCHEDULED")
-      (end-of-line)
-      (newline)
-      (insert (concat org-scheduled-string " " (org-current-year-month-day))))
+      (org-entry-put nil "SCHEDULED" (org-current-year-month-day)))
 
     ;; copy the content into the target buffer
     (with-current-buffer receiver
