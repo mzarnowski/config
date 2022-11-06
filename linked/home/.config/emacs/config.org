@@ -237,8 +237,11 @@ Let's have the clean buffers
 	 ("C-x b" . consult-buffer)
 	 ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
 	 ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
-	 ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
-	 ))
+	 ("C-x 5 b" . consult-buffer-other-frame))  ;; orig. switch-to-buffer-other-frame
+	 :config
+	 (use-package embark-consult
+	   :hook
+	   (embark-collect-mode . consult-preview-at-point-mode)))
 #+end_src
 ** Configure file backups
 
