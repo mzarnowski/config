@@ -33,8 +33,67 @@
 (defun org-current-year-month-day ()
   (format-time-string "<%Y-%m-%d>" (current-time)))
 
-;; workspace
+;; header/mode line
+(defun hm-line/format-command (key name)
+  ;; leading 'M-' prefix is represented as 'ESC'
+  (let ((key (s-replace-regexp "^ESC " "M-" key)))
+    (list (concat name ": '")
+	  `(:propertize ,key
+			face help-key-binding
+			font-lock-face help-key-binding)
+	  "'")))
+(defun hm-line/format-keymap-binding (key action)
+  (pcase action
+    (`(,name . ,_) (hm-line/format-command key name))))
 
+(defun hm-line/merge-key (prefix key)
+  (let ((suffix (single-key-description key)))
+    (if prefix
+	(concat prefix " " suffix)
+      suffix)))
+
+(defun hm-line/for-each-in-keymap (acc keymap f &optional prefix)
+  "f returns a list of elements"
+  (map-keymap (lambda (key action)
+		(let ((key (hm-line/merge-key prefix key)))
+		  (if (keymapp action)
+		      (hm-line/for-each-in-keymap acc action f key)
+		    (add-to-list acc (funcall f key action))
+		    )))
+	      keymap)
+    acc)
+
+(defun hm-line-format-keymap (keymap)
+  (let ((properties ()))
+    (hm-line/for-each-in-keymap 'properties keymap #'hm-line/format-keymap-binding)
+    (-interpose " " properties)))
+
+;; keymaps
+(defun workspace/define-keymap (&rest bindings)
+  (let ((keymap (make-sparse-keymap)))
+    (-each bindings (lambda (binding) (workspace/define-key keymap binding)))
+    keymap))
+
+(defun workspace/extend-keymap (parent &rest bindings)
+  (when (keymapp parent)
+    (let ((keymap (apply #'workspace/define-keymap bindings)))
+      (set-keymap-parent keymap parent)
+      keymap)))
+
+(defun workspace/define-key (keymap binding)
+  (let ((key (nth 0 binding))
+	(name (nth 1 binding))
+	(command (workspace/normalize-keymap-command (nth 2 binding))))
+    (define-key keymap (kbd key) (cons name command))))
+
+(defun workspace/normalize-keymap-command (action)
+  (cond ((commandp  action) action)
+	((keymapp   action) action)
+	((functionp action) `(lambda () (interactive) (,action)))
+	((listp     action) `(lambda () (interactive) ,action))
+	(t (user-error "Unsupported command of type %s: %s" (type-of action) action))))
+
+;; workspace
 (defvar workspace/root    "~/workspace")
 (defvar workspace/current "mzarnowski")
 
@@ -90,10 +149,6 @@
 	       :template "* TODO %?"
 	       :prepare-finalize ,workspace/before-thought-capture))))
 
-(defun workspace/thought-capture (&optional project)
-  (let* ((file (workspace/current-file project "thoughts/raw")))
-    (workspace/org-capture (workspace/thought-template file))))
-
 ;; journal
 
 (defun workspace/create-journal-entry-headline ()
@@ -133,12 +188,12 @@
     keys))
 
 (defun workspace/agenda-menu (project)
-  (workspace/make-menu
+  (workspace/define-keymap
    `("a"   "new entry"   (workspace-agenda-capture ,project))
    `("RET" "open agenda" (workspace-agenda-open    ,project))))
 
 (defun workspace/journal-menu (project)
-  (workspace/make-menu
+  (workspace/define-keymap
    `("j" "new entry" (workspace/journal-capture ,project))))
 
 (defun workspace/thoughts-menu (project)
@@ -161,16 +216,35 @@
    `("j" "journal"  ,(workspace/journal-menu "spex"))
    `("t" "thoughts" ,(workspace/thoughts-menu "spex"))))
 
-(global-set-key (kbd "C-`") (spex-make-keymap))
+(global-set-key (kbd "C-c n") (spex-make-keymap))
+
+
+;; TODO transient per-project menu opened on the right
+;;  with ability to switch-to-project.
+;; By default, it reads the current-buffer's workspace/project value
+
+
+(defvar workspace/project nil)
+(transient-define-argument workspace-menu/project ()
+  "Currently selected project"
+  :description "Current project"
+  :class 'transient-lisp-variable
+  :variable 'workspace/project)
+
+(transient-define-prefix workspace-menu () ["foo"]
+  )
+
 
 ;; custom thought capture
 (defun workspace/thought-capture (&optional project)
   (let ((buffer (generate-new-buffer "*thought*")))
     (with-current-buffer buffer
       (org-mode)
-      (workspace/thought-capture-mode 1)
-      (set (make-local-variable 'workspace/project) project)
       (insert "* ")
+
+      (setq-local workspace/project project) ;; must be set AFTER entering org-mode
+      (workspace/thought-capture-mode 1)
+      
       (select-window (display-buffer buffer)))))
 
 (defun workspace/thought-capture-finalize ()
@@ -203,33 +277,22 @@
     ;; TODO probably not needed
     (select-window (display-buffer receiver))))
 
-(defun workspace/thought-capture-kill ()
+(defun workspace/thought-capture-discard ()
   (interactive)
   (kill-buffer))
 
-(defvar workspace/thought-capture-mode-map
-  (workspace/make-menu
-   `("C-c C-c" "finalize" workspace/thought-capture-finalize)
-   `("C-c C-k" "kill"     workspace/thought-capture-kill))
-  "Keymap for `workspace/thought-capture-mode', a minor mode.")
-
-
 (define-minor-mode workspace/thought-capture-mode
-  "Minor mode for special key bindings in a thought capture buffer."
-  :global      nil
-  :interactive nil
-  :init-value  nil
-  :lighter     " Cap"
-  (if workspace/thought-capture-mode
-      (let ((format (hm-line-format "Capture: " 'workspace/thought-capture-mode-map)))
-	(setq-local header-line-format format))
-    (progn (setq-local header-line-format nil))))
-
+  "Disables all keys."
+  :lighter " th-cap"
+  :keymap (workspace/define-keymap
+	   `("C-c C-c" "finalize" workspace/thought-capture-finalize)
+	   `("C-c C-k" "discard"  workspace/thought-capture-discard))
+  (setq-local header-line-format (hm-line-format-keymap workspace/thought-capture-mode-map)))
+ 
 ;; thought refine
 (require 'org-ql-search)
 
-(defvar workspace/org-file-regexp
-  "\\`[^.].*\\.org\\(\\.gpg\\)?\\'"
+(defvar workspace/org-file-regexp "\\`[^.].*\\.org\\(\\.gpg\\)?\\'"
   "TODO")
 
 (defun workspace/thoughts-all-files (project)
@@ -238,85 +301,97 @@
    :recurse     t
    :regexp      workspace/org-file-regexp))
 
-(defun workspace/keymap-shadow (original &rest replacements)
-  (let ((keymap (make-sparse-keymap)))
-    (set-keymap-parent keymap org-ql-view-map)
-    (-each replacements
-      (lambda (it) (define-key keymap (kbd (car it)) (cdr it))))
-    keymap))
-
-
-(defun workspace/thought-refine-shadowed-keymap (original)
-  (workspace/keymap-shadow original
-			   `("RET" . workspace/thought-refine)))
-
 (defun workspace/thought-browse-unrefined (&optional project)
   (let ((files (workspace/thoughts-all-files project))
-	(org-ql-view-map (workspace/thought-refine-shadowed-keymap org-ql-view-map)))
-    (org-ql-search files '(and (todo) (scheduled))
-      :title "Refine thoughts")))
+	(org-ql-view-map (workspace/extend-keymap
+			  org-ql-view-map
+			  `("RET" "refine" (workspace/thought-refine ,project)))))
+    (org-ql-search files '(todo) :title "Unrefined thoughts")))
 
-
-(defun workspace/thought-refine ()
+(defun workspace/thought-refine (project)
   (interactive)
-  "Begin refinement of the selected entry
-(at point in the agenda view)"
+  "Begin refinement of the selected entry"
   ;; TODO - open in separate window, like in org-src?
   ;; otherwise, only one thought can be refined at a time
   ;; ... which might be a good thing
+  ;; otherwise, we could create a dedicated buffer named
+  ;; after the thought being refined
   (org-agenda-switch-to)
   (org-narrow-to-subtree)
-  (workspace/thought-refine-mode 1)
-  (ignore)) ;; TODO: also, set the correct minor modes?
+
+  (setq-local workspace/project project) ;; must be set after entering org-mode
+  (workspace/thought-refine-mode 1))
 
 (defun workspace/thought-refine-close ()
   (interactive)
+
+  (setq header-line-format nil)
+
   (widen)
-  (workspace/thought-refine-mode -1)
   (bury-buffer))
 
-(defvar workspace/thought-refine-mode-map
-  (workspace/make-menu
-   `("C-c C-c" "new note" workspace/thought-refine-close)
-   `("C-c C-k" "close" workspace/thought-refine-close))
-  "Keymap for `workspace/thought-refine-mode', a minor mode.")
-
 (define-minor-mode workspace/thought-refine-mode
-  "Minor mode for special key bindings in a thought capture buffer."
-  :global      nil
-  :interactive nil
-  :init-value  nil
-  :lighter     " Ref"
-  (if workspace/thought-refine-mode
-      (let ((format (hm-line-format "Refine: " 'workspace/thought-refine-mode-map)))
-	(setq-local header-line-format format))
-    (progn (setq-local header-line-format nil))))
+  "Disables all keys."
+  :lighter " th-ref"
+  :keymap (workspace/define-keymap
+	   `("C-c C-n" "derive"   (workspace/note-derive))
+	   `("C-c C-c" "finalize" (message "fin")))
+  (setq-local header-line-format (hm-line-format-keymap workspace/thought-refine-mode-map)))
 
-;; header/mode line
-(defun hm-line/build-key-code (prefix key-code)
-  (let ((key (single-key-description key-code)))
-    (if prefix (concat prefix " " key) key)))
+;; notes
+;;; a note is derived from a thought
+(defun workspace/note-derive ()
+  (let ((buffer  (generate-new-buffer "*derive-note*"))
+	(project workspace/project))
+    (let ((capture-buffer (generate-new-buffer "*derived-note*")))
+      (setq-local workspace/project project)
+      (switch-to-buffer-other-window capture-buffer)
+      (org-mode)
+      (workspace/note-derive-mode 1))))
 
-(defun hm-line/describe-key (prefix action)
-    (pcase action
-      ((pred keymapp) (hm-line/keymap-collect-keys action prefix))
-      (`(,name . ,action) (format "%s `\\[%s]'" name (symbol-name action)))
-      (_ (print prefix) (print action))))
+(define-minor-mode workspace/note-derive-mode
+  "Minor mode for special key bindings in a derive-note buffer."
+  :lighter     " Der"
+  :keymap (workspace/define-keymap)
+  (setq-local header-line-format (hm-line-format-keymap workspace/note-derive-mode-map)))
 
-(defun hm-line/keymap-collect-keys (keymap prefix)
-  (let ((segments ()))
-    (map-keymap (lambda (key-code action)
-		  (let ((prefix (hm-line/build-key-code prefix key-code)))
-		    (add-to-list 'segments (hm-line/describe-key prefix action))))
-		keymap)
-    segments))
+;; TODO defvar
+(setq workspace/note-derive-mode-map
+  (workspace/make-menu
+   `("C-c n i" "link to:" org-roam-node-insert)
+   `("C-c C-c" "finalize" workspace/note-derive-finalize)
+   `("C-c C-k" "cancel" workspace/note-derive-cancel)))
 
-(defun hm-line/template (header keymap-name keymap)
-  (let ((segments (hm-line/keymap-collect-keys (eval keymap-symbol) nil)))
-    (concat "\\<" keymap-name ">" header (s-join ", " (-flatten segments)))))
-  
+(defun workspace/note-link-to ()
+  "Insert linkt o a note (or thought) at point"
+  (interactive)
+  (let ((files (workspace/thoughts-all-files workspace/project)))
+    (let* ((results (org-ql-select files '(property "ID")
+		  :action 'element-with-markers
+		  :narrow nil
+		  :sort   nil))
+	   (strings (-map #'org-ql-view--format-element results))
+	   (foo (s-join "\n" strings))
+	   (buffer (current-buffer)))
+      (with-temp-buffer
+	(strings)
+	(local-set-key (kbd "RET") (lambda ()
+				      (interactive)
+				      (let ((id (org-get-at-bol 'ID)))
+					(kill-buffer)
+					(switch-to-buffer buffer)
+					(insert (concat "--" id "--"))))))
+    )))
 
-(defun hm-line-format (header keymap-symbol)
-  (let ((keymap-name (symbol-name keymap-symbol))
-	(keymap      (eval keymap-symbol)))
-    (substitute-command-keys (hm-line/template header keymap-name keymap))))
+(defun workspace/note-derive-finalize ()
+  "Insert currently derived note into the slipbox"
+  (interactive)
+  (ignore))
+
+(defun workspace/note-derive-cancel ()
+  "Discard current note"
+  (interactive)
+  (when (or (not (= (point-min) (point-max)))
+	    (y-or-n-p "Note is not empty. Cancel anyway?"))
+    (ignore)))
+
