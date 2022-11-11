@@ -96,19 +96,37 @@
 ;; workspace
 (defvar workspace/root    "~/workspace")
 (defvar workspace/current "mzarnowski")
+(defvar workspace/project nil)
 
-(defun workspace/path (project name)
-  (if project
-      (f-join (workspace/projects-dir) project name)
-    (f-join workspace/root workspace/current name)))
+(defvar workspace/current-workspace nil)
+(defvar workspace/current-project nil)
 
-(defun workspace/current-file (project directory)
-  (let ((filename (format-time-string "%Y" (current-time))))
-    (workspace/path project (format "%s/%s.org.gpg" directory filename))))
+(defvar workspace-buffer--project-path nil)
+
+(defun workspace/path (project-path name)
+  (apply #'f-join
+	 (-non-nil (list (workspace/project-path-root-path project-path)
+			 (workspace/project-path-workspace-name project-path)
+			 (workspace/project-path-project-name project-path)
+			 name))))
+
+(defun workspace/current-file (project-path directory)
+  (let* ((file-name (format-time-string "%Y" (current-time)))
+	 (file-path (format "%s/%s.org.gpg" directory file-name)))
+    (workspace/path project-path file-path)))
 
 (defun workspace/projects-dir ()
   (f-join workspace/root workspace/current "projects"))
 
+;;; workspace-buffer-local-entry
+
+(defun workspace-buffer--path (name)
+  (workspace/path workspace-buffer--project-path name))
+
+(defun workspace-buffer--latest-file-in (directory)
+  (workspace/current-file workspace-buffer--project-path directory))
+
+;; org-mode
 (defun workspace/org-capture (template)
   (let ((org-capture-entry template))
     (org-capture)))
@@ -121,9 +139,15 @@
 (defun workspace/agenda-template (file)
   (car (doct `("Agenda" :keys "a" :file ,file :template "* TODO %?"))))
 
-(defun workspace/agenda-capture (&optional project)
-  (let* ((file (workspace/current-file project "agenda")))
-      (workspace/org-capture (workspace/agenda-template file))))
+(defun workspace/agenda-capture (&optional project-name)
+  (let* ((workspace workspace/current)
+	 (project (workspace/find-project workspace project-name))
+    (workspace--agenda-capture workspace project))))
+
+(defun workspace--agenda-capture (workspace project)
+  (let ((file (workspace/current-file workspace project "agenda")))
+    (workspace/org-capture (workspace/agenda-template file))))
+
 
 (defun workspace/agenda-open (&optional project)
   (workspace/org-agenda-in (workspace/path project "agenda")))
@@ -162,124 +186,136 @@
 	       :function workspace/create-journal-entry-headline
 	       :template "* %<%H:%M> %?"))))
 
-(defun workspace/journal-capture (&optional project)
-  (let* ((file (workspace/current-file project "journal")))
+(defun workspace/journal-capture (workspace &optional project)
+  (let* ((file (workspace/current-file workspace project "journal")))
     (workspace/org-capture (workspace/journal-template file))))
 
 (defun workspace/journal-open (&optional project)
   (find-file (workspace/current-journal-file)))    
 
-;;; menu
-(defun workspace/menu-target (target)
-  (cond ((commandp  target) target)
-	((keymapp   target) target)
-	((functionp target) `(lambda () (interactive) (,target)))
-	((listp     target) `(lambda () (interactive) ,target))))
-
-(defun workspace/menu-bind (keys binding)
-  (let ((key    (nth 0 binding))
-	(name   (nth 1 binding))
-	(target (nth 2 binding)))
-    (define-key keys (kbd key) (cons name (workspace/menu-target target)))))
-
-(defun workspace/make-menu (&rest bindings)
-  (let ((keys (make-sparse-keymap)))
-    (-each bindings (lambda (it) (workspace/menu-bind keys it)))
-    keys))
-
-(defun workspace/agenda-menu (project)
-  (workspace/define-keymap
-   `("a"   "new entry"   (workspace-agenda-capture ,project))
-   `("RET" "open agenda" (workspace-agenda-open    ,project))))
-
-(defun workspace/journal-menu (project)
-  (workspace/define-keymap
-   `("j" "new entry" (workspace/journal-capture ,project))))
-
-(defun workspace/thoughts-menu (project)
-  (workspace/make-menu
-   `("t" "capture thought" (workspace/thought-capture ,project))
-   `("r" "refine thoughts" (workspace/thought-browse-unrefined  ,project))
-   `("RET" "open thought"  (workspace/thoughts-open   ,project))))
-
-(defun workspace/select-project ()
-  (completing-read "Project:" (-map #'f-filename (f-directories (workspace/projects-dir)))))
-
-(defun workspace-menu ()
-  (workspace/make-menu
-   `("C-`" "in project" (workspace/select-project))))
-
-;; spex
-(defun spex-make-keymap ()
-  (workspace/make-menu
-   `("a" "agenda"   ,(workspace/agenda-menu "spex"))
-   `("j" "journal"  ,(workspace/journal-menu "spex"))
-   `("t" "thoughts" ,(workspace/thoughts-menu "spex"))))
-
-(global-set-key (kbd "C-c n") (spex-make-keymap))
 
 
 ;; TODO transient per-project menu opened on the right
 ;;  with ability to switch-to-project.
 ;; By default, it reads the current-buffer's workspace/project value
 
+(cl-defstruct (workspace/workspace) name projects)
+(cl-defstruct (workspace/project) name)
+(cl-defstruct (workspace/project-path) root-path workspace-name project-name)
 
-(defvar workspace/project nil)
-(transient-define-argument workspace-menu/project ()
-  "Currently selected project"
-  :description "Current project"
-  :class 'transient-lisp-variable
-  :variable 'workspace/project)
+(defun workspace/string->project-path (value)
+  (let ((segments (s-split-up-to "/" value 1)))
+    (make-workspace/project-path :root-path workspace/root
+				 :workspace-name (car segments)
+				 :project-name (cadr segments))))
 
-(transient-define-prefix workspace-menu () ["foo"]
+(defun workspace/find-project (workspace name)
+  (-find (lambda (it) (string= name (workspace/project-name it)))
+	 (workspace/workspace-projects workspace)))
+
+(defun workspace/select-project ()
+  (completing-read "Project:" (-map #'f-filename (f-directories (workspace/projects-dir)))))
+
+(setq workspace/current (make-workspace/workspace
+			  :name "mzarnowski"
+			  :projects (list
+				     (make-workspace/project :name "spex"))))
+
+(defun workspace/projects (&optional workspace)
+  (let ((workspace (if workspace workspace workspace/current)))
+    (mapcar #'workspace/project-name (workspace/workspace-projects workspace))))
+
+(defun workspace/read- (prompt initial-input history)
+  (completing-read prompt (workspace/projects) nil nil initial-input history))
+`
+(transient-define-argument workspace-menu/change-project ()
+  :class 'transient-option
+  :key "p"
+  :description "project"
+  :argument "project")
+
+(defun workspace-menu/current-project ()
+  (if workspace/project
+      (format ("Project: %s" workspace/project))
+    "Workspace"))
+
+
+
+(transient-define-prefix workspace-menu ()
+  [["agenda"
+    ("aa" "capture" (lambda () (interactive) (workspace/agenda-capture)))]
+   ["journal"
+    ("jj" "capture" (lambda () (interactive) (workspace/journal-capture)))]
+   ["thoughts"
+    ("tt" "capture" (lambda () (interactive) (workspace-thought--capture "mzarnowski")))
+    ("tr" "refine"  (lambda () (interactive) (workspace/thought-browse-unrefined)))]]
+  ["projects"
+   ("ps" "spex" (lambda () (interactive) (message "spex")))]
   )
+
+(transient-define-prefix workspace-spex-menu ()
+  [["thoughts"
+    ("tt" "capture" (lambda () (interactive) (workspace/thought--capture "mzarnowski/spex")))
+    ("tr" "refine"  (lambda () (interactive) (workspace/thought-refine  "mzarnowski/spex")))]
+   ["journal"
+    ("jj" "capture" (lambda () (interactive) (workspace/journal-capture "mzarnowski/spex")))]]
+  ["projects"
+   ("ps" "spex" (lambda () (interactive) (message "spex")))])
+
+(global-set-key (kbd "C-c C-n") #'workspace-menu)
 
 
 ;; custom thought capture
-(defun workspace/thought-capture (&optional project)
-  (let ((buffer (generate-new-buffer "*thought*")))
+(defun workspace-thought--capture (project-path-string)
+  (let ((project-path (workspace/string->project-path project-path-string))
+	(buffer (generate-new-buffer "*thought*")))
     (with-current-buffer buffer
       (org-mode)
       (insert "* ")
 
-      (setq-local workspace/project project) ;; must be set AFTER entering org-mode
+      ;; must be set AFTER entering org-mode
+      (setq-local workspace-buffer--project-path project-path)
       (workspace/thought-capture-mode 1)
       
       (select-window (display-buffer buffer)))))
 
 (defun workspace/thought-capture-finalize ()
   (interactive)
-  (let* ((file (workspace/current-file workspace/project "thoughts/raw"))
+  (let* ((file (workspace-buffer--latest-file-in "thoughts/raw"))
 	 (provider (current-buffer))
 	 (receiver (find-file-noselect file)))
     ;; make the entry a TODO
     (goto-char (point-min))
     (org-todo "TODO")
-
+    
     ;; schedule refinement, unless already scheduled by the author
     (unless (org-entry-get nil "SCHEDULED")
       (org-entry-put nil "SCHEDULED" (org-current-year-month-day)))
-
+    
     ;; copy the content into the target buffer
     (with-current-buffer receiver
+      ;; org-id-get-create requires the file to already exist...
+      (unless (f-exists? file)
+	(save-buffer))
+      
       (save-excursion
 	(goto-char (point-max))
-	(unless (looking-at-p "^$"):
+	(unless (looking-at-p "^$")
 	  (newline))
+	
 	(insert-buffer provider)
 	;; assign an ID
-	(org-id-get-create)))
+	(org-id-get-create))
+      (save-buffer))
 
     ;; finally, kill the capture buffer
-    (kill-buffer)
-
-    ;; open then receiver buffer
-    ;; TODO probably not needed
-    (select-window (display-buffer receiver))))
+    (kill-buffer)))
 
 (defun workspace/thought-capture-discard ()
   (interactive)
-  (kill-buffer))
+  (when (or (string= "* " (buffer-string))
+	    (y-or-n-p "Discard this thought?"))
+    (kill-buffer)))
 
 (define-minor-mode workspace/thought-capture-mode
   "Disables all keys."
@@ -309,7 +345,6 @@
     (org-ql-search files '(todo) :title "Unrefined thoughts")))
 
 (defun workspace/thought-refine (project)
-  (interactive)
   "Begin refinement of the selected entry"
   ;; TODO - open in separate window, like in org-src?
   ;; otherwise, only one thought can be refined at a time
