@@ -207,17 +207,15 @@ Let's have the clean buffers
   (setq corfu-cycle           t)
   (setq corfu-separator       ?\s)
   (setq corfu-preselect-first nil)
+  (setq corfu-popupinfo-delay '(0.3 . t))
   :bind
   (:map corfu-map
 	("SPC" . corfu-insert-separator)
 	("<tab>" . corfu-next)
         ("<backtab>" . corfu-previous))
   :init
-  (global-corfu-mode))
-
-(use-package corfu-doc
-  :init
-  (corfu-doc-mode))
+  (global-corfu-mode)
+  (corfu-popupinfo-mode))
 
 (defun corfu-enable-in-minibuffer ()
   "Enable Corfu in the minibuffer if `completion-at-point' is bound."
