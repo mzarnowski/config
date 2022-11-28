@@ -6,5 +6,5 @@
 !init.el
 
 !extensions/
-!extensions/*.el
+!extensions/**/*
 
