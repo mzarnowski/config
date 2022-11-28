@@ -1,3 +1,5 @@
+;;;  -*- lexical-binding: t -*-
+
 ;; org-related extensions
 (defun org-find-or-create-headline (headline &optional reposition)
   "Find or create a given headline"
@@ -42,6 +44,7 @@
 			face help-key-binding
 			font-lock-face help-key-binding)
 	  "'")))
+
 (defun hm-line/format-keymap-binding (key action)
   (pcase action
     (`(,name . ,_) (hm-line/format-command key name))))
@@ -91,7 +94,7 @@
 	((keymapp   action) action)
 	((functionp action) `(lambda () (interactive) (,action)))
 	((listp     action) `(lambda () (interactive) ,action))
-	(t (user-error "Unsupported command of type %s: %s" (type-of action) action))))
+	(_ (user-error "Unsupported command of type %s: %s" (type-of action) action))))
 
 ;; workspace
 (defvar workspace/root    "~/workspace")
@@ -221,13 +224,23 @@
 			  :projects (list
 				     (make-workspace/project :name "spex"))))
 
+;;  frame / window parameter holds the latest workspace / project used
+;; there are four commands used to change those values:
+;; (workspace-{frame,window}-switch-{workspace,project})
+;;  there is nothing like that for buffers, because those
+;; use workspace-owner buffer-local variable. Content could potentially be moved to
+;; a different project, but that depents on the content type, so let's ignore it for now
+
+;;  now, calling (workspace-thought-capture) uses the
+;; workspace / project found in buffer or window or frame parameter  
+
 (defun workspace/projects (&optional workspace)
   (let ((workspace (if workspace workspace workspace/current)))
     (mapcar #'workspace/project-name (workspace/workspace-projects workspace))))
 
 (defun workspace/read- (prompt initial-input history)
   (completing-read prompt (workspace/projects) nil nil initial-input history))
-`
+
 (transient-define-argument workspace-menu/change-project ()
   :class 'transient-option
   :key "p"
@@ -240,30 +253,152 @@
     "Workspace"))
 
 
+;; agenda contains everything I want to or have to work on scheduled at some day
+;; issues/tickets contain a description of same, but not scheduled
+;;   only prioritization is eisenhover box
 
-(transient-define-prefix workspace-menu ()
-  [["agenda"
-    ("aa" "capture" (lambda () (interactive) (workspace/agenda-capture)))]
-   ["journal"
-    ("jj" "capture" (lambda () (interactive) (workspace/journal-capture)))]
-   ["thoughts"
-    ("tt" "capture" (lambda () (interactive) (workspace-thought--capture "mzarnowski")))
-    ("tr" "refine"  (lambda () (interactive) (workspace/thought-browse-unrefined)))]]
-  ["projects"
-   ("ps" "spex" (lambda () (interactive) (message "spex")))]
-  )
+;; TODO (e)xplore or (f)ind? e.g. agenda, thoughts
+;;   e seems more versatile
+;; also, (e)xplore (r)andom issue/thought/routine seems like a nice prefix
 
-(transient-define-prefix workspace-spex-menu ()
-  [["thoughts"
-    ("tt" "capture" (lambda () (interactive) (workspace/thought--capture "mzarnowski/spex")))
-    ("tr" "refine"  (lambda () (interactive) (workspace/thought-refine  "mzarnowski/spex")))]
-   ["journal"
-    ("jj" "capture" (lambda () (interactive) (workspace/journal-capture "mzarnowski/spex")))]]
-  ["projects"
-   ("ps" "spex" (lambda () (interactive) (message "spex")))])
+;; ca - capture agenda item
+;; fa - explore agenda
+;; ci - capture issue using this workflow: https://emacs.cafe/emacs/orgmode/gtd/2017/06/30/orgmode-gtd.html
+;; fi - explore issues?
+;; ct - capture raw thought
+;; ft - find thought
+;; cj - capture journal entry
+;; fj - find journal entry
+;; h  - help prefix
+;; hr - show described routines (e.g. how to take notes, or create sourdough
+;; cr - capture a routine (like org-roam, first, specify a name. Then, edit the routine)
+;; p  - switch project
 
-(global-set-key (kbd "C-c C-n") #'workspace-menu)
+(cl-defstruct workspace-menu-row    title columns)
+(cl-defstruct workspace-menu-column title commands)
 
+(defun workspace-issues--menu-column (workspace project)
+  (make-workspace-menu-column :title "issues"
+			      :commands
+			      `(("c" "capture" (user-error "Not implemented")))))
+
+(defun workspace-journal--menu-column (workspace project)
+  (make-workspace-menu-column :title "journal"
+			      :commands
+			      `(("c" "capture" (workspace/journal-capture workspace project)))))
+
+(defun workspace-thoughts--menu-column (workspace project)
+  (make-workspace-menu-column :title "thoughts"
+			      :commands
+			      `(("c" "capture" (workspace-thought--capture workspace project))
+				("r" "refine" (workspace-thought--browse-unrefined workspace project)))))
+
+(defun workspace-notes--menu-column (workspace project)
+  (make-workspace-menu-column :title "notes"
+			      :commands
+			      `("f" "find" (workspace-notes--find workspace project))))
+
+(defun workspace-menu--transient-layout (workspace)
+  (let ((namespace (concat "WORKSPACE:" (workspace/workspace-name workspace))))
+    (list (workspace-menu--row namespace ))))
+
+(defun workspace-menu--workspace-transient-prefix (workspace)
+  (let ((symbol (intern (format "workspace-%s-menu" (workspace/workspace-name workspace)))))
+    (defalias symbol `(lambda () (interactive) (transient-setup ',symbol)))
+    (put symbol 'interactive-only t)
+;;    (put symbol 'transient--prefix (transient-prefix :command 'which-key-show-full-keymap))
+    (put symbol 'transient--layout foo-bar)
+    symbol))
+
+(defun workspace-menu--workspace->transient-layout (workspace)
+  (let ((workspace-name (workspace/workspace-name workspace)))
+    (workspace--transient-menu
+     workspace-name
+     `("Workspace: mzarnowski"
+       ,(workspace-issues--transient-menu-column workspace)
+       ,(workspace-journal--transient-menu-column workspace)
+       ,(workspace-notes--transient-menu-column workspace)
+       ,(workspace-thoughts--transient-menu-column workspace))
+     `("projects"
+       (("spex" "ps" (workspace-menu ,workspace "spex")))))))
+
+(defun workspace-menu--make-segment (name)
+  (replace-regexp-in-string "[ \t\n\r]+" "-" name))
+
+(defun workspace-menu--make-namespace (&rest segments)
+  (s-join ":" (mapcar #'workspace-menu--make-segment segments)))
+
+(defun workspace-menu--make-symbol (namespace form)
+  (let ((name (format "%s:%d" namespace (sxhash command))))
+    (intern name)))
+
+(defun workspace-menu--command->transient-suffix (namespace key name action)
+  (let* ((command (workspace-menu--action->command action))
+	 (symbol  (workspace-menu--bind-command namespace command)))
+    `(1 transient-suffix ,(list :key key :description name :command symbol))))
+
+(defun workspace-menu--transient-column (namespace commands)
+  (let ((namespace (format "%s:%s" namespace title)))
+    (-map (lambda (it) (let ((key    (aref it 0))
+			     (name   (aref it 1))
+			     (action (aref it 2)))
+			 (workspace-menu--command->transient-suffix namespace key name action)))
+	    commands)))
+
+(defun workspace-menu--transient-row (namespace columns)
+  "[\"title\" (a b c)]"
+  (let ((columns (mapcar (lambda (it) (workspace-menu--transient-column namespace it)) columns)))
+    columns))				;
+
+(defun workspace--transient-menu (title &rest rows)
+  (let* ((namespace (workspace-menu--make-namespace "WORKSPACE" title))
+	 (rows (mapcar (lambda (it) (workspace-menu--transient-row namespace it)) rows)))
+    (vector rows)))
+
+(defun workspace-menu--action->command (command)
+  (cond
+   ((commandp  command) command)
+   ((functionp command) `(lambda () (interactive) (funcall ,command)))
+   ((listp     command) `(lambda () (interactive) ,command))
+   (_ (user-error "not a command, function or list: %s" command))))
+
+(defun workspace-menu--bind-command (namespace command)
+  (cond
+   ((symbolp   command) command)
+   ((functionp command)
+    (let* ((symbol (workspace-menu--make-symbol namespace command)))
+      (defalias symbol command)))
+   (_ (user-error "not a symbol or command form: %s" command))))
+
+(defun workspace-menu-item (namespace key name action)
+  (let* ((command (workspace-menu--action->command action))
+	 (symbol  (workspace-menu--bind-command namespace command)))
+    `(1 transient-suffix ,(list :key key
+			       :description name
+			       :command (workspace-menu--bind-command namespace command)))))
+
+(defun workspace-keymap->bindings (namespace keymap)
+  (let ((rows ())
+	(f (lambda (key action)
+	     (pcase action
+	       (`(,name . ,action) (workspace-menu-item namespace key name action))
+	       (_ (user-error "Command without description: %s" action))))))
+    (hm-line/for-each-in-keymap 'rows keymap f)
+    rows))
+
+(defun workspace-menu-column (namespace keymap)
+  (let ((bindings (workspace-keymap->bindings namespace keymap)))
+    bindings))
+
+;; menu
+
+(defface workspace-menu-heading
+  '((t (:weight bold)))
+  "Face used for headings in Helpful buffers.")
+
+(defun workspace-menu--heading (text)
+  "Propertize TEXT as a heading."
+  (format "%s\n" (propertize text 'face 'helpful-heading)))
 
 ;; custom thought capture
 (defun workspace-thought--capture (project-path-string)
@@ -272,7 +407,6 @@
     (with-current-buffer buffer
       (org-mode)
       (insert "* ")
-
       ;; must be set AFTER entering org-mode
       (setq-local workspace-buffer--project-path project-path)
       (workspace/thought-capture-mode 1)
@@ -391,11 +525,11 @@
   (setq-local header-line-format (hm-line-format-keymap workspace/note-derive-mode-map)))
 
 ;; TODO defvar
-(setq workspace/note-derive-mode-map
-  (workspace/make-menu
-   `("C-c n i" "link to:" org-roam-node-insert)
-   `("C-c C-c" "finalize" workspace/note-derive-finalize)
-   `("C-c C-k" "cancel" workspace/note-derive-cancel)))
+;; (setq workspace/note-derive-mode-map
+;;   (workspace/make-menu
+;;    `("C-c n i" "link to:" org-roam-node-insert)
+;;    `("C-c C-c" "finalize" workspace/note-derive-finalize)
+;;    `("C-c C-k" "cancel" workspace/note-derive-cancel)))
 
 (defun workspace/note-link-to ()
   "Insert linkt o a note (or thought) at point"
