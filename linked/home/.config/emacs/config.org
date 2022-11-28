@@ -670,6 +670,19 @@ the popup for selecting targets from all matching keys. If set to nil, all match
   (org-roam-setup))
 #+END_SRC
 
+*** org-babel
+#+begin_src emacs-lisp
+(defun org-babel-execute:asm (body params)
+  "Compiles, links and runs a single asm file"
+  (let* ((src (f-join temporary-file-directory "org-babel-asm.s"))
+         (obj (f-join temporary-file-directory "org-babel-asm.o"))
+         (exe (f-join temporary-file-directory "org-babel-asm.exe")))
+    (with-temp-file src (insert body))
+    (shell-command (format "as %s -o %s" src obj))
+    (shell-command (format "ld %s -o %s" obj exe))
+    (shell-command exe)))
+#+end_src
+
 * RSS
 
 The layout of the feed .org file is just an outline with property
