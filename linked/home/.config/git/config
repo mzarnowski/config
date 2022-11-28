@@ -26,3 +26,6 @@
 	default = current
 [credential]
 	helper = cache
+[user]
+	email = marek1840+github@gmail.com
+	name = mzarnowski
