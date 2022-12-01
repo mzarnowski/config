@@ -36,23 +36,39 @@
    ("Status" 6 t)
    ("Title" 1 t)])
 
+(cl-defun workspace-thoughts--explore-buffer-title (plist))
+
+(cl-defun workspace-thoughts--explore-buffer-entry (plist)
+  (let ((id      (plist-get plist ':ID))
+	(title   (plist-get plist ':raw-value))
+	(status  (plist-get plist ':todo-keyword))
+	(created (plist-get plist ':scheduled))
+	(marker  (plist-get plist ':org-marker)))
+    (let ((created (let* ((org-timestamp created)
+			  (time (org-timestamp-to-time org-timestamp)))
+		     (format-time-string "%Y-%m-%d" time))))
+      (when (and id marker)
+	(list (propertize id :org-marker marker)
+	      (vector created status title))))))
+
 (cl-defun workspace-thoughts--explore-buffer-entries (workspace mode)
   "Adapts thoughts (org-mode headlines) to tabulated list
 
 The format for the list element is defined by 'tabulated-list-entries':
 (ID [string ... string])"
-  (cl-labels ((id      (plist) (plist-get plist ':ID))
-	      (title   (plist) (plist-get plist ':raw-value))
-	      (status  (plist) (plist-get plist ':todo-keyword))
-	      (created (plist) (let* ((org-timestamp (plist-get plist ':scheduled))
-				      (time (org-timestamp-to-time org-timestamp)))
-				 (format-time-string "%Y-%m-%d" time)))
-	      (adapt (plist) (list (id      plist)
-				   (vector (created plist)
-					   (status  plist)
-					   (title   plist)))))
-  (let ((thoughts (workspace-thoughts--find-thoughts workspace mode :query '(todo))))
-    (-map #'(lambda (it) (adapt (cadr it))) thoughts))))
+  (cl-labels ((f (thought) (workspace-thoughts--explore-buffer-entry (cadr thought))))
+    (let ((thoughts (workspace-thoughts--find-thoughts workspace mode :query '(todo))))
+      (-non-nil (-map #'f thoughts)))))
+
+(cl-defun workspace-thoughts--explore-buffer-act-on-f (workspace mode)
+  (lambda ()
+    (interactive)
+    (let ((marker (get-text-property 0 :org-marker (tabulated-list-get-id))))
+      (with-current-buffer (marker-buffer marker)
+	(switch-to-buffer (current-buffer))))))
+
+(cl-defun workspace-thoughts--explore-buffer-refresh-f (workspace mode)
+  (lambda () (workspace-thoughts--refresh-explore-buffer workspace mode)))
 
 (cl-defun workspace-thoughts--explore-buffer (workspace mode)
   (let* ((buffer (workspace-thoughts--explore-get-buffer-create workspace mode))
@@ -66,9 +82,11 @@ The format for the list element is defined by 'tabulated-list-entries':
       (setq tabulated-list-format header)
       (tabulated-list-init-header)
 
-      (cl-labels ((refresh-thoughts ()
-				    (workspace-thoughts--refresh-explore-buffer workspace mode)))
-	(add-hook 'tabulated-list-revert-hook #'refresh-thoughts nil t))
+      (local-set-key (kbd "RET") (workspace-thoughts--explore-buffer-act-on-f workspace mode))
+
+      (add-hook 'tabulated-list-revert-hook
+		(workspace-thoughts--explore-buffer-refresh-f workspace mode)
+		nil t)
       (revert-buffer))
     buffer))
 
