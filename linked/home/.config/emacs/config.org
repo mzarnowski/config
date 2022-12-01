@@ -435,9 +435,11 @@ to jump to any visible character directly
   ("C-<XF86AudioLowerVolume>" . volume-minimize))
 #+end_src
 ** Docker
+#+begin_src emacs-lisp
 (use-package docker
-  :ensure t
   :bind ("C-c d" . docker))
+
+(use-package dockerfile-mode)
 #+end_src
 
 #+begin_src emacs-lisp
