@@ -202,11 +202,11 @@ Let's have the clean buffers
 (setq tab-always-indent 'complete) ;; indent if needed, then complete
 
 (use-package corfu
-  :custom
+  :config
   (setq corfu-auto            t)
   (setq corfu-cycle           t)
   (setq corfu-separator       ?\s)
-  (setq corfu-preselect-first nil)
+  (setq corfu-preselect-first t)
   (setq corfu-popupinfo-delay '(0.3 . t))
   :bind
   (:map corfu-map
