@@ -194,6 +194,54 @@ Let's have the clean buffers
     (git-gutter-mode))
 #+END_SRC
 
+* System integration
+** Volume management
+#+begin_src emacs-lisp
+(use-package volume
+  :defer 3
+  :bind
+  ("<XF86AudioRaiseVolume>"   . (lambda () (interactive) (volume-raise 5)))
+  ("<XF86AudioLowerVolume>"   . (lambda () (interactive) (volume-lower 5)))
+  ("S-<XF86AudioRaiseVolume>" . (lambda () (interactive) (volume-raise 10)))
+  ("S-<XF86AudioLowerVolume>" . (lambda () (interactive) (volume-lower 10)))
+  ("C-<XF86AudioLowerVolume>" . volume-minimize))
+#+end_src
+** Docker
+#+begin_src emacs-lisp
+(use-package docker
+  :bind ("C-c d" . docker))
+
+(use-package dockerfile-mode)
+#+end_src
+
+#+begin_src emacs-lisp
+;; from https://www.emacswiki.org/emacs/TrampAndDocker
+(defvar tramp-docker-parameters
+  '((tramp-login-program "docker")
+    (tramp-login-args (("exec" "-it") ("%h") ("/bin/bash")))
+    (tramp-remote-shell "/bin/sh")
+    (tramp-remote-shell-args ("-i") ("-c"))))
+
+(use-package tramp
+  :config
+  (print ">tramp")
+  (push (cons "docker" tramp-docker-parameters) tramp-methods))
+
+(defun tramp-docker-containers ()
+  (let* ((command "docker ps | awk '$NF != \"NAMES\" { print $NF \":\" }'")
+	 (raw-output (shell-command-to-string command))
+	 (lines (split-string raw-output "\n")))
+    (cl-remove-if-not #'(lambda (it) (string-match ":$" it)) lines)))
+
+(defadvice tramp-completion-handle-file-name-all-completions
+    (around dotemacs-completion-docker activate)
+  "(tramp-completion-handle-file-name-all-completions \"\" \"/docker:\" returns
+    a list of active Docker container names, followed by colons."
+  (if (equal (ad-get-arg 1) "/docker:")
+        (setq ad-return-value (tramp-docker-containers))
+    ad-do-it))
+#+end_src
+
 * User experience
 ** Completion
 
@@ -401,9 +449,9 @@ to jump to any visible character directly
 ** Remember recently opened files
 
 #+BEGIN_SRC emacs-lisp
-(use-package recentf
-  :init
-  (recentf-mode))
+  (use-package recentf
+    :init
+    (recentf-mode))
 #+END_SRC
 
 ** Space separated completions
@@ -421,49 +469,6 @@ to jump to any visible character directly
   (use-package mw-thesaurus
     :bind ("C-h w" . #'mw-thesaurus-lookup-dwim))
 #+END_SRC
-
-* System integration
-** Volume management
-#+begin_src emacs-lisp
-(use-package volume
-  :defer 3
-  :bind
-  ("<XF86AudioRaiseVolume>"   . (lambda () (interactive) (volume-raise 5)))
-  ("<XF86AudioLowerVolume>"   . (lambda () (interactive) (volume-lower 5)))
-  ("S-<XF86AudioRaiseVolume>" . (lambda () (interactive) (volume-raise 10)))
-  ("S-<XF86AudioLowerVolume>" . (lambda () (interactive) (volume-lower 10)))
-  ("C-<XF86AudioLowerVolume>" . volume-minimize))
-#+end_src
-** Docker
-#+begin_src emacs-lisp
-(use-package docker
-  :bind ("C-c d" . docker))
-
-(use-package dockerfile-mode)
-#+end_src
-
-#+begin_src emacs-lisp
-  ;; from https://www.emacswiki.org/emacs/TrampAndDocker
-  ;; (let ((docker-parameters '((tramp-login-program "docker")
-  ;; 			   (tramp-login-args (("exec" "-it") ("%h") ("/bin/bash")))
-  ;; 			   (tramp-remote-shell "/bin/sh")
-  ;; 			   (tramp-remote-shell-args ("-i") ("-c")))))
-  ;;   (push (cons "docker" docker-parameters) tramp-methods))
-
-  ;; (defun tramp-docker-containers ()
-  ;;   (let* ((command "docker ps | awk '$NF != \"NAMES\" { print $NF \":\" }'")
-  ;; 	 (raw-output (shell-command-to-string command))
-  ;; 	 (lines (split-string raw-output "\n")))
-  ;;     (cl-remove-if-not #'(lambda (it) (string-match ":$" it)) lines)))
-
-  ;; (defadvice tramp-completion-handle-file-name-all-completions
-  ;;     (around dotemacs-completion-docker activate)
-  ;;   "(tramp-completion-handle-file-name-all-completions \"\" \"/docker:\" returns
-  ;;     a list of active Docker container names, followed by colons."
-  ;;   (if (equal (ad-get-arg 1) "/docker:")
-  ;;         (setq ad-return-value (tramp-docker-containers))
-  ;;     ad-do-it))
-#+end_src
 
 * Software Development
 
