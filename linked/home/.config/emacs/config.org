@@ -435,6 +435,11 @@ to jump to any visible character directly
     (global-set-key (kbd "C-;") 'avy-goto-char))
 #+END_SRC
 
+** Replace selected text
+#+begin_src emacs-lisp
+(delete-selection-mode t)
+#+end_src
+
 ** Remember point position in file
 
 #+BEGIN_QUOTE 
