@@ -206,6 +206,10 @@ Let's have the clean buffers
   ("S-<XF86AudioLowerVolume>" . (lambda () (interactive) (volume-lower 10)))
   ("C-<XF86AudioLowerVolume>" . volume-minimize))
 #+end_src
+** Bluetooth
+#+begin_src emacs-lisp
+(use-package bluetooth)
+#+end_src
 ** Docker
 #+begin_src emacs-lisp
 (use-package docker
