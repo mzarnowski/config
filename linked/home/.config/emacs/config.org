@@ -104,6 +104,11 @@ Sadly, this doesn't seem to work in terminal
   (set-fringe-mode 16)
 #+END_SRC
 
+**** Respect dislay rules when manually switching buffer
+#+begin_src emacs-lisp
+(setq switch-to-buffer-obey-display-actions t)
+#+end_src
+
 *** Buffers
 
 **** Make scratch-buffer empty initially
