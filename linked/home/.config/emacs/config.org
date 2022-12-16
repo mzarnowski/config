@@ -260,7 +260,7 @@ Let's have the clean buffers
 
 (use-package corfu
   :config
-  (setq corfu-auto            t)
+  (setq corfu-auto            nil)
   (setq corfu-cycle           t)
   (setq corfu-separator       ?\s)
   (setq corfu-preselect-first t)
