@@ -70,6 +70,7 @@ shopt -s histappend   # append history, instead of overwriting it #139609
 export EDITOR=/usr/bin/vim
 
 alias magit='emacsclient -a emacs -e "(magit-status \"$(git rev-parse --show-toplevel)\")"'
+alias os-update='sudo apt-get update && sudo apt-get upgrade'
 
 source_if_exists () {
   [ -r "$1" ] && . "$1"

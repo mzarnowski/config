@@ -95,6 +95,7 @@ export EDITOR=/usr/bin/vim
 *** Aliases
 #+begin_src shell :tangle ~/.config/bash/rc.sh
 alias magit='emacsclient -a emacs -e "(magit-status \"$(git rev-parse --show-toplevel)\")"'
+alias os-update='sudo apt-get update && sudo apt-get upgrade'
 #+end_src
 
 *** Functions
