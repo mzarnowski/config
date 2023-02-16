@@ -250,6 +250,14 @@ Let's have the clean buffers
         (setq ad-return-value (tramp-docker-containers))
     ad-do-it))
 #+end_src
+** Books
+#+begin_src emacs-lisp
+(use-package calibredb
+  :config
+  (setq calibredb-root-dir "~/Documents/Books"
+	calibredb-library-alist '(("~/Documents/Books"))
+	calibredb-db-dir (expand-file-name "metadata.db" calibredb-root-dir)))
+#+end_src
 
 * User experience
 ** Completion
@@ -542,7 +550,8 @@ The *[[https://github.com/rejeep/f.el][f]]* library simplifies working with file
 #+begin_src emacs-lisp
 (use-package sly
   :config
-  (setq inferior-list-program "/usr/bin/sbcl"))
+  (setq inferior-list-program "/usr/bin/sbcl")
+  (setq sly-symbol-completion-mode nil))
 #+end_src
 
 *** TODO Reconfigure describe (C-h C-h) in sly mode
