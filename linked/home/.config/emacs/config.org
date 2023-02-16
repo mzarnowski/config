@@ -171,7 +171,7 @@ Let's have the clean buffers
 
 ** Keymap
 #+begin_src emacs-lisp
-(global-set-key (kbd "C-<tab>") #'consult-recent-file)
+(global-set-key (kbd "C-<tab>") #'consult-buffer)
 
 (global-set-key (kbd "<f1>") #'workspace-menu)
 
@@ -441,7 +441,8 @@ to jump to any visible character directly
 #+BEGIN_SRC emacs-lisp
   (use-package avy
     :config
-    (global-set-key (kbd "C-;") 'avy-goto-char))
+    (global-set-key (kbd "C-;") 'avy-goto-char-2)
+    (define-key isearch-mode-map (kbd "C-;") 'avy-isearch))
 #+END_SRC
 
 ** Replace selected text
