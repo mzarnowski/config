@@ -655,9 +655,81 @@ the popup for selecting targets from all matching keys. If set to nil, all match
     (setq vterm-max-scrollback 10000))
 #+END_SRC 
 
+** +hash
+#+begin_src emacs-lisp
+(cl-defun +hash-map (list &key key (value #'identity) (test 'eql))
+  (let ((table (make-hash-table :test test)))
+    (-each list (lambda (it) (puthash (funcall key it) (funcall value it) table)))
+    table))
+
+(cl-defun +hash-select (table fn)
+  (let ((key (funcall fn table)))
+    (gethash key table)))
+#+end_src
+
 ** org-mode
 
 #+BEGIN_SRC emacs-lisp
+(use-package doct)
+(defcustom +org-workspace-root "~/workspace" "TODO")
+(defcustom +org-extension-rx (rx line-start (not ".") (one-or-more any) ".org" (optional ".gpg") line-end) "TODO")
+
+(defcustom +org-refile-default-target-query
+  '(or (heading "Inbox") (heading "Journal"))
+  "TODO")
+
+(defcustom +org-workspace-current-file-name "current" "TODO")
+(cl-defun +org-workspace-current-file (workspace)
+  (f-join +org-workspace-root workspace (concat +org-workspace-current-file-name ".org")))
+(cl-defun +org-template (&key keys workspace)
+  (doct `((,workspace
+	  :keys ,keys
+	  :type entry
+	  :file ,(+org-workspace-current-file workspace)
+	  :todo-state "TODO"
+	  :headline "inbox"
+	  :template ("* %{todo-state} %?"
+	            "SCHEDULED: <%<%F>>"
+		     ":PROPERTIES:"
+		     ":ID:         %(org-id-new)"
+		     ":CREATED-ON: %<%FT%R%z>"
+		     ":END:")
+	  :hook org-hide-drawer-all))))
+
+(cl-defun +org-refile-available-targets (workspace &key (query +org-refile-default-target-query))
+  (let ((buffers-files (list (f-join +org-workspace-root workspace "current.org"))))
+    (org-ql-select buffers-files query
+      :action (lambda () `(,(point-marker) (:outline . ,(org-get-outline-path t)))))))
+
+(cl-defun +completing-read (table &key prompt (group nil))
+  (cl-labels ((group (candidate transform)
+		     (pcase transform
+		       (`nil (when group (funcall group (gethash candidate table))))
+		       (_    candidate)))
+	      (collection (str pred flag)
+			  (pcase flag
+			    ('metadata (list 'metadata
+					     (cons 'group-function #'group)))
+			    (`t (all-completions str table pred)))))
+    (let ((key (completing-read prompt #'collection)))
+      (gethash key table))))
+
+(cl-defun +org-refile-completing-read (workspace)
+  (let ((table (+hash-map (+org-refile-available-targets workspace)
+			  :key (lambda (it) (s-join "/" (alist-get :outline (cdr it))))
+			  :value #'car
+			  :test #'equal)))
+    (+completing-read table
+		      :prompt "Target: "
+		      :group (lambda (it) (-> it marker-buffer buffer-name)))))
+
+(cl-defun +org-refile (workspace)
+  (interactive '("mzarnowski"))
+  (when-let ((marker (+org-refile-completing-read workspace)))
+    (let ((name (org-with-point-at marker (nth 4 (org-heading-components))))
+	  (file (buffer-file-name (marker-buffer marker))))
+    (org-refile nil nil (list name file nil marker)))))
+
 (use-package org
   :config
   (setq epa-file-select-keys nil) ;; don't prompt for encryption recipients if specified by epa-file-encrypt-to
@@ -671,25 +743,39 @@ the popup for selecting targets from all matching keys. If set to nil, all match
         org-src-tab-acts-natively        t
         org-src-fontify-natively         t
         org-confirm-babel-evaluate       nil)
-  (let ((org-file-regexp "\\`[^.].*\\.org\\(\\.gpg\\)?\\'"))
-    (setq org-agenda-file-regexp org-file-regexp
-	  org-ql-search-directories-files-regexp org-file-regexp))
+
+  (setq org-capture-templates (-list (+org-template :keys "m" :workspace "mzarnowski")))
+
+  (setq org-agenda-file-regexp                 +org-extension-rx)
+  (setq org-ql-search-directories-files-regexp +org-extension-rx)
+  (setq org-ql-completing-read-reverse-paths   nil)
+
+  (setq org-agenda-files   (list (f-join +org-workspace-root "mzarnowski"))
+	org-refile-targets `((org-agenda-files . (:regexp . ,(rx (or "Inbox" "Journal")))))
+	org-refile-use-outline-path            t
+	org-refile-allow-creating-parent-nodes 'confirm
+	org-outline-path-complete-in-steps     nil)
+
   (unbind-key (kbd "C-c [") 'org-mode-map)
   (unbind-key (kbd "C-c ]") 'org-mode-map)
   (unbind-key (kbd "C-c ;") 'org-mode-map)
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((shell . t)))
-  (use-package doct)
+
   (use-package org-superstar ;; nicer bullets
     :config
     (setq org-superstar-special-todo-items t)
     :hook
     (org-mode . org-superstar-mode))
+
   (use-package org-appear ;; Show hidden emphasis markers
     :hook
     (org-mode . org-appear-mode)))
 #+END_SRC
+
+#+RESULTS:
+: t
 
 *** org-roam
 
