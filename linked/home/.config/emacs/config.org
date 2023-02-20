@@ -675,7 +675,8 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 (defcustom +org-extension-rx (rx line-start (not ".") (one-or-more any) ".org" (optional ".gpg") line-end) "TODO")
 
 (defcustom +org-refile-default-target-query
-  '(or (heading "Inbox") (heading "Journal"))
+  '(or (heading "inbox") (heading "journal")
+       (parent (heading "topic")))
   "TODO")
 
 (defcustom +org-workspace-current-file-name "current" "TODO")
@@ -730,7 +731,16 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 	  (file (buffer-file-name (marker-buffer marker))))
     (org-refile nil nil (list name file nil marker)))))
 
+(cl-defun +org-capture-refile (workspace)
+  (interactive '("mzarnowski"))
+  (let ((org-capture-is-refiling t))
+    (and (+org-refile workspace)
+	 (kill-buffer))))
+
 (use-package org
+  :bind
+  ([remap org-refile]         . +org-refile)
+  ([remap org-capture-refile] . +org-capture-refile)
   :config
   (setq epa-file-select-keys nil) ;; don't prompt for encryption recipients if specified by epa-file-encrypt-to
   (setq org-hide-emphasis-markers      t)
@@ -751,7 +761,6 @@ the popup for selecting targets from all matching keys. If set to nil, all match
   (setq org-ql-completing-read-reverse-paths   nil)
 
   (setq org-agenda-files   (list (f-join +org-workspace-root "mzarnowski"))
-	org-refile-targets `((org-agenda-files . (:regexp . ,(rx (or "Inbox" "Journal")))))
 	org-refile-use-outline-path            t
 	org-refile-allow-creating-parent-nodes 'confirm
 	org-outline-path-complete-in-steps     nil)
@@ -773,9 +782,6 @@ the popup for selecting targets from all matching keys. If set to nil, all match
     :hook
     (org-mode . org-appear-mode)))
 #+END_SRC
-
-#+RESULTS:
-: t
 
 *** org-roam
 
