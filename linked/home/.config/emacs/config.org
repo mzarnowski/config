@@ -670,14 +670,36 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 ** org-mode
 
 #+BEGIN_SRC emacs-lisp
+(cl-defun +completing-read (table &key prompt)
+  (cl-labels ((group (candidate transform)
+		     (pcase transform
+		       (`nil (get-text-property 0 'group candidate))
+		       (_    candidate)))
+	      (collection (str pred flag)
+			  (pcase flag
+			    ('metadata (list 'metadata
+					     (cons 'group-function #'group)))
+			    (`t (all-completions str table pred)))))
+    (let ((key (completing-read prompt #'collection)))
+      (gethash key table))))
+
 (use-package doct)
 (defcustom +org-workspace-root "~/workspace" "TODO")
 (defcustom +org-extension-rx (rx line-start (not ".") (one-or-more any) ".org" (optional ".gpg") line-end) "TODO")
 
 (defcustom +org-refile-default-target-query
-  '(or (heading "inbox") (heading "journal")
-       (parent (heading "topic")))
+  '(or (heading "inbox") (heading "journal") (heading "insight") (heading "bookmarks")
+       (parent (heading "notes")))
   "TODO")
+
+(cl-defun +org-refile-completing-target (it)
+  (let* ((outline (alist-get :outline (cdr it)))
+	 (name  (s-join "/" outline))
+	 (group (cond
+		 ((string= (nth 0 outline) "notes") "notes")
+		 ((string= (nth 0 outline) "project") (nth 1 outline))
+		 (t "general"))))
+    (print (propertize name 'group group))))
 
 (defcustom +org-workspace-current-file-name "current" "TODO")
 (cl-defun +org-workspace-current-file (workspace)
@@ -702,27 +724,11 @@ the popup for selecting targets from all matching keys. If set to nil, all match
     (org-ql-select buffers-files query
       :action (lambda () `(,(point-marker) (:outline . ,(org-get-outline-path t)))))))
 
-(cl-defun +completing-read (table &key prompt (group nil))
-  (cl-labels ((group (candidate transform)
-		     (pcase transform
-		       (`nil (when group (funcall group (gethash candidate table))))
-		       (_    candidate)))
-	      (collection (str pred flag)
-			  (pcase flag
-			    ('metadata (list 'metadata
-					     (cons 'group-function #'group)))
-			    (`t (all-completions str table pred)))))
-    (let ((key (completing-read prompt #'collection)))
-      (gethash key table))))
-
 (cl-defun +org-refile-completing-read (workspace)
   (let ((table (+hash-map (+org-refile-available-targets workspace)
-			  :key (lambda (it) (s-join "/" (alist-get :outline (cdr it))))
-			  :value #'car
+			  :key #'+org-refile-completing-target
 			  :test #'equal)))
-    (+completing-read table
-		      :prompt "Target: "
-		      :group (lambda (it) (-> it marker-buffer buffer-name)))))
+    (car (+completing-read table :prompt "Target: "))))
 
 (cl-defun +org-refile (workspace)
   (interactive '("mzarnowski"))
