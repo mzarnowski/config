@@ -709,6 +709,70 @@ the popup for selecting targets from all matching keys. If set to nil, all match
        (parent (heading "notes")))
   "TODO")
 
+(defcustom +org-link-query
+  '(property "ID")
+  "TODO")
+
+;; cannot be cl-defun, lands us at the start of the next line after the drawer opening
+(defun +org-drawer-start-regexp (name)
+  (rx line-start (* (or " " "	")) ":" (eval name) ":" (*? whitespace) line-end))
+
+
+(defun +org-drawer-store (name value &key unique)
+  (save-excursion
+    (outline-back-to-heading)
+    (let ((next-heading (save-excursion (outline-next-heading) (point))))
+      (if-let ((drawer-start (+org-search-drawer-forward name :until next-heading)))
+	  ;; since drawer exists, insert unique value only if not already present
+	  (unless (and unique
+		       (save-excursion
+			 (re-search-forward ":END:" next-heading)
+			 (re-search-backward (format "^%s$" value) drawer-start t)))
+	    (newline) ;; search puts us at the end of the drawer header (i.e. :foo:)
+	    (insert value))
+	;; otherwise create a new drawer
+	(progn
+	  ;; move past the PROPERTIES drawer, if any
+	  (re-search-forward org-property-drawer-re next-heading t)
+	  (newline) ;; we are at the end of the headline or drawer header (i.e. :foo:)
+	  (insert ":" name ":\n" value "\n:END:")
+	  ;; let's finish at the same place, the goto-drawer would: end of the drawer header
+	  (previous-line))))))
+
+(cl-defun +org-search-drawer-forward (name &key until)
+  (let ((pattern (+org-drawer-start-regexp name)))
+    (re-search-forward pattern until t)))
+
+(defcustom +org-backlink-drawer-name "DERIVED" "TODO")
+
+(cl-defun +org-link (workspace)
+  (interactive '("mzarnowski"))
+  (if-let* ((buffers-files (f-files (f-join +org-workspace-root workspace "org")
+				 (lambda (it) (f-ext-p it "org"))))
+	 (entries (org-ql-select buffers-files +org-link-query
+		    :action (lambda () (list (point-marker)
+					     (cons :outline (org-get-outline-path t))
+					     (cons :id      (org-id-get))))))
+	 (selected nil))
+    (atomic-change-group
+      (if-let ((foo-id (org-id-get))
+	       (marker (car selected))
+	       (link (org-link-make-string (concat +org-link-schema ":" (alist-get :id selected))
+					   (s-join "/" (alist-get :outline selected))))
+	       (progn (insert link)
+		      (with-current-buffer (marker-buffer marker)
+			(save-excursion
+			  (goto-char (marker-position marker))
+			  (if (+org-goto-drawer +org-backlink-drawer-name)
+			      (progn)
+			    (progn
+			      ;; move past properties or stay at the beginning of entry
+			      (re-search-forward org-property-drawer-re)
+			      ;; insert new drawer
+			      (org-insert-drawer nil +org-backlink-drawer-name)
+			    ))))))
+    ))
+
 (cl-defun +org-refile-completing-target (it)
   (let* ((outline (alist-get :outline (cdr it)))
 	 (name  (s-join "/" outline))
@@ -720,7 +784,7 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 
 (defcustom +org-workspace-current-file-name "current" "TODO")
 (cl-defun +org-workspace-current-file (workspace)
-  (f-join +org-workspace-root workspace (concat +org-workspace-current-file-name ".org")))
+  (f-join +org-workspace-root workspace "org" (concat +org-workspace-current-file-name ".org")))
 (cl-defun +org-template (&key keys workspace)
   (doct `((,workspace
 	  :keys ,keys
@@ -737,9 +801,10 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 	  :hook org-hide-drawer-all))))
 
 (cl-defun +org-refile-available-targets (workspace &key (query +org-refile-default-target-query))
-  (let ((buffers-files (list (f-join +org-workspace-root workspace "current.org"))))
+  (let ((buffers-files (list (+org-workspace-current-file workspace))))
     (org-ql-select buffers-files query
-      :action (lambda () `(,(point-marker) (:outline . ,(org-get-outline-path t)))))))
+      :action (lambda () (list (point-marker)
+			       (cons :outline (org-get-outline-path t)))))))
 
 (cl-defun +org-refile-completing-read (workspace)
   (let ((table (+hash-map (+org-refile-available-targets workspace)
@@ -750,9 +815,16 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 (cl-defun +org-refile (workspace)
   (interactive '("mzarnowski"))
   (when-let ((marker (+org-refile-completing-read workspace)))
+    (while (not (org-id-get)) (outline-up-heading 1))
     (let ((name (org-with-point-at marker (nth 4 (org-heading-components))))
 	  (file (buffer-file-name (marker-buffer marker))))
     (org-refile nil nil (list name file nil marker)))))
+
+(cl-defun +org-capture (workspace)
+  (interactive '("mzarnowski"))
+  (let ((keys (when (= 1 (length org-capture-templates))
+	       (caar org-capture-templates))))
+    (org-capture nil keys)))
 
 (cl-defun +org-capture-refile (workspace)
   (interactive '("mzarnowski"))
@@ -762,6 +834,7 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 
 (use-package org
   :bind
+  ("C-c n i"                  . +org-capture)
   ([remap org-refile]         . +org-refile)
   ([remap org-capture-refile] . +org-capture-refile)
   :config
@@ -821,14 +894,14 @@ the popup for selecting targets from all matching keys. If set to nil, all match
   (org-roam-dailies-directory "journal/")
   (org-node-completions-everywhere t)
   :bind
-  (("C-c n f" . org-roam-node-find    )
-   ("C-c n i" . org-roam-node-insert  )
-   ("C-c n l" . org-roam-buffer-toggle)
-   ;; configure roam-dailies
-   ("C-c n d" . org-roam-dailies-map  )
-   :map org-roam-dailies-map
-   ("Y" . org-roam-dailies-capture-yesterday)
-   ("T" . org-roam-dailies-capture-tomorrow ))
+  ;; (("C-c n f" . org-roam-node-find    )
+  ;;  ("C-c n i" . org-roam-node-insert  )
+  ;;  ("C-c n l" . org-roam-buffer-toggle)
+  ;;  ;; configure roam-dailies
+  ;;  ("C-c n d" . org-roam-dailies-map  )
+  ;;  :map org-roam-dailies-map
+  ;;  ("Y" . org-roam-dailies-capture-yesterday)
+  ;;  ("T" . org-roam-dailies-capture-tomorrow ))
   :config
   (require 'org-roam-dailies)
   (setq org-roam-capture-templates
