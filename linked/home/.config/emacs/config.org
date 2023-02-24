@@ -453,6 +453,23 @@ to jump to any visible character directly
     (define-key isearch-mode-map (kbd "C-;") 'avy-isearch))
 #+END_SRC
 
+Alternatively, holymotion simplifies motions:
+#+begin_src emacs-lisp :noeval
+(use-package holymotion
+  :straight (holymotion :type git
+                        :host github
+                        :repo "Overdr0ne/holymotion"
+                        :branch "main")
+  :config
+  ;; define some custom motions, I'm using smartparens here
+  (holymotion-make-motion
+   holymotion-forward-sexp #'sp-forward-sexp)
+  (holymotion-make-motion
+   holymotion-backward-sexp #'sp-backward-sexp))
+#+end_src
+
+#+RESULTS:
+
 ** Replace selected text
 #+begin_src emacs-lisp
 (delete-selection-mode t)
