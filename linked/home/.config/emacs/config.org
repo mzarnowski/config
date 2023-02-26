@@ -454,7 +454,7 @@ to jump to any visible character directly
 #+END_SRC
 
 Alternatively, holymotion simplifies motions:
-#+begin_src emacs-lisp :noeval
+#+begin_src emacs-lisp :tangle no
 (use-package holymotion
   :straight (holymotion :type git
                         :host github
@@ -706,12 +706,16 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 
 (defcustom +org-refile-default-target-query
   '(or (heading "inbox") (heading "journal") (heading "insight") (heading "bookmarks")
-       (parent (heading "notes")))
+       (parent (heading "milestones")))
   "TODO")
 
 (defcustom +org-link-query
   '(property "ID")
   "TODO")
+
+(cl-defun +org-workspace-files (workspace)
+  (f-files (f-join +org-workspace-root workspace "org")
+	   (lambda (it) (string-match +org-extension-rx it))))
 
 ;; cannot be cl-defun, lands us at the start of the next line after the drawer opening
 (defun +org-drawer-start-regexp (name)
@@ -744,34 +748,38 @@ the popup for selecting targets from all matching keys. If set to nil, all match
     (re-search-forward pattern until t)))
 
 (defcustom +org-backlink-drawer-name "DERIVED" "TODO")
+(defcustom +org-link-schema "+id" "TODO")
+
+(org-link-set-parameters +org-link-schema
+                         :follow #'+org-link-follow)
+
+(cl-defun +org-completing-read (entries &key prompt (key #'+org-refile-completing-target))
+  (let ((table (+hash-map entries :key key :test #'equal)))
+    (+completing-read table :prompt prompt)))
+
+(cl-defun +org-link-completing-read (workspace)
+  (let* ((buffers-files (+org-workspace-files workspace))
+	 (entries (org-ql-select buffers-files +org-link-query
+		   :action (lambda () (list (point-marker)
+					    (cons :outline (org-get-outline-path t))
+					    (cons :id      (org-id-get)))))))
+    (+org-completing-read entries :prompt "Link: ")))
 
 (cl-defun +org-link (workspace)
   (interactive '("mzarnowski"))
-  (if-let* ((buffers-files (f-files (f-join +org-workspace-root workspace "org")
-				 (lambda (it) (f-ext-p it "org"))))
-	 (entries (org-ql-select buffers-files +org-link-query
-		    :action (lambda () (list (point-marker)
-					     (cons :outline (org-get-outline-path t))
-					     (cons :id      (org-id-get))))))
-	 (selected nil))
-    (atomic-change-group
-      (if-let ((foo-id (org-id-get))
-	       (marker (car selected))
-	       (link (org-link-make-string (concat +org-link-schema ":" (alist-get :id selected))
-					   (s-join "/" (alist-get :outline selected))))
-	       (progn (insert link)
-		      (with-current-buffer (marker-buffer marker)
-			(save-excursion
-			  (goto-char (marker-position marker))
-			  (if (+org-goto-drawer +org-backlink-drawer-name)
-			      (progn)
-			    (progn
-			      ;; move past properties or stay at the beginning of entry
-			      (re-search-forward org-property-drawer-re)
-			      ;; insert new drawer
-			      (org-insert-drawer nil +org-backlink-drawer-name)
-			    ))))))
-    ))
+  (unless (derived-mode-p 'org-mode))
+  (if-let* ((selected (+org-link-completing-read workspace)))
+      (let ((id (alist-get :id selected))
+	    (name (car (last (alist-get :outline selected)))))
+	(insert (org-link-make-string (format "%s:%s:%s" +org-link-schema workspace id) name)))))
+
+(cl-defun +org-link-follow (link _)
+  (-let* (((workspace id) (s-split ":" link))
+	  (buffers-files (+org-workspace-files workspace))
+	  ((marker _) (org-ql-select buffers-files `(property "ID" ,id) :action #'point-marker)))
+    (pop-to-buffer-same-window (marker-buffer marker))
+    (goto-char (marker-position marker))
+    (end-of-line)))
 
 (cl-defun +org-refile-completing-target (it)
   (let* ((outline (alist-get :outline (cdr it)))
@@ -882,40 +890,40 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 *** org-roam
 
 #+BEGIN_SRC emacs-lisp
-(defun org-roam-file-path ()
-  (let* ((uuid (uuid))
-	 (prefix (substring uuid 0 2))
-	 (suffix (substring uuid 2)))
-    (concat prefix "/" suffix)))
+;; (defun org-roam-file-path ()
+;;   (let* ((uuid (uuid))
+;; 	 (prefix (substring uuid 0 2))
+;; 	 (suffix (substring uuid 2)))
+;;     (concat prefix "/" suffix)))
 
-(use-package org-roam
-  :custom
-  (org-roam-directory "~/workspace/mzarnowski/org/notes")
-  (org-roam-dailies-directory "journal/")
-  (org-node-completions-everywhere t)
-  :bind
-  ;; (("C-c n f" . org-roam-node-find    )
-  ;;  ("C-c n i" . org-roam-node-insert  )
-  ;;  ("C-c n l" . org-roam-buffer-toggle)
-  ;;  ;; configure roam-dailies
-  ;;  ("C-c n d" . org-roam-dailies-map  )
-  ;;  :map org-roam-dailies-map
-  ;;  ("Y" . org-roam-dailies-capture-yesterday)
-  ;;  ("T" . org-roam-dailies-capture-tomorrow ))
-  :config
-  (require 'org-roam-dailies)
-  (setq org-roam-capture-templates
-        '(("P" "public" plain "%?"
-           :target     (file+head "%(org-roam-file-path).org"     "#+title: ${title}\n")
-           :unnarrowed t)
-          ("p" "private" plain "%?"
-           :target     (file+head "%(org-roam-file-path).org.gpg" "#+title: ${title}\n")
-           :unnarrowed t)))
-  (setq org-roam-dailies-capture-templates
-	`(("d" "default" entry "* %?"
-	   :target (file+head "%<%Y-%m-%d>.org.gpg" "#+title: %<%Y-%m-%d>\n"))))
-  (setq org-return-follows-link t)
-  (org-roam-setup))
+;; (use-package org-roam
+;;   :custom
+;;   (org-roam-directory "~/workspace/mzarnowski/org/notes")
+;;   (org-roam-dailies-directory "journal/")
+;;   (org-node-completions-everywhere t)
+;;   :bind
+;;   ;; (("C-c n f" . org-roam-node-find    )
+;;   ;;  ("C-c n i" . org-roam-node-insert  )
+;;   ;;  ("C-c n l" . org-roam-buffer-toggle)
+;;   ;;  ;; configure roam-dailies
+;;   ;;  ("C-c n d" . org-roam-dailies-map  )
+;;   ;;  :map org-roam-dailies-map
+;;   ;;  ("Y" . org-roam-dailies-capture-yesterday)
+;;   ;;  ("T" . org-roam-dailies-capture-tomorrow ))
+;;   :config
+;;   (require 'org-roam-dailies)
+;;   (setq org-roam-capture-templates
+;;         '(("P" "public" plain "%?"
+;;            :target     (file+head "%(org-roam-file-path).org"     "#+title: ${title}\n")
+;;            :unnarrowed t)
+;;           ("p" "private" plain "%?"
+;;            :target     (file+head "%(org-roam-file-path).org.gpg" "#+title: ${title}\n")
+;;            :unnarrowed t)))
+;;   (setq org-roam-dailies-capture-templates
+;; 	`(("d" "default" entry "* %?"
+;; 	   :target (file+head "%<%Y-%m-%d>.org.gpg" "#+title: %<%Y-%m-%d>\n"))))
+;;   (setq org-return-follows-link t)
+;;   (org-roam-setup))
 #+END_SRC
 
 *** org-babel
