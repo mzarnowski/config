@@ -510,6 +510,50 @@ Alternatively, holymotion simplifies motions:
     :bind ("C-h w" . #'mw-thesaurus-lookup-dwim))
 #+END_SRC
 
+** Easier keymap
+#+begin_src emacs-lisp
+(defun +define-keymap (&rest bindings)
+  (let ((keymap (make-sparse-keymap)))
+    (-each bindings (lambda (binding) (+define-key keymap binding)))
+    keymap))
+
+(defun +extend-keymap (parent &rest bindings)
+  (when (keymapp parent)
+    (let ((keymap (apply #'+define-keymap bindings)))
+      (set-keymap-parent keymap parent)
+      keymap)))
+
+(defun +define-key (keymap binding)
+  (let ((key (+define-key-normalize-key (nth 0 binding)))
+	(name (nth 1 binding))
+	(command (+define-key-normalize-command (nth 2 binding))))
+    (define-key keymap key (cons name command))))
+
+(defun +define-key-normalize-key (key)
+  (cond ((vectorp key) key)
+	((stringp  key) (kbd key))
+	(t (user-error "Unsupported %s key: %s " (type-of key) key))))
+
+(defun +define-key-normalize-command (action)
+  (cond ((commandp  action) action)
+	((keymapp   action) action)
+	((functionp action) `(lambda () (interactive) (,action)))
+	((listp     action) `(lambda () (interactive) ,action))
+	(_ (user-error "Unsupported  %s command: %s" (type-of action) action))))
+#+end_src
+
+** Project mask
+#+begin_src emacs-lisp
+(define-minor-mode project-mode
+  "Rebinds the project-related shortcuts to their default emacs bindings"
+  :global t
+  :lighter " Project"
+  :keymap (+define-keymap
+	   '([remap consult-buffer] "buffer" consult-project-buffer)
+	   '([remap dired] "dired" project-dired)
+	   '([remap find-file] "find-file" project-find-file)))
+#+end_src
+
 * Software Development
 
 ** Elisp
