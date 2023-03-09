@@ -850,7 +850,8 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 		     ":ID:         %(org-id-new)"
 		     ":CREATED-ON: %<%FT%R%z>"
 		     ":END:")
-	  :hook org-hide-drawer-all))))
+	  :hook org-hide-drawer-all
+	  :before-finalize save-buffer))))
 
 (cl-defun +org-refile-available-targets (workspace &key (query +org-refile-default-target-query))
   (let ((buffers-files (list (+org-workspace-current-file workspace))))
