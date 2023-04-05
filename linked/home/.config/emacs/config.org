@@ -642,6 +642,35 @@ Alternatively, holymotion simplifies motions:
 
 *** TODO Reconfigure describe (C-h C-h) in sly mode
 
+** Snippets
+#+begin_src emacs-lisp
+(use-package yasnippet
+  :hook ((prog-mode . yas-minor-mode)))
+#+end_src
+
+** golang
+#+begin_src emacs-lisp
+(shell-command-to-string "go install golang.org/x/tools/gopls@latest")
+(setq exec-path (append exec-path '("~/go/bin")))
+(use-package go-mode)
+
+(require 'project)
+
+(defun project-find-go-module (dir)
+  (when-let ((root (locate-dominating-file dir "go.mod")))
+    (cons 'go-module root)))
+
+(cl-defmethod project-root ((project (head go-module)))
+  (cdr project))
+
+(add-hook 'project-find-functions #'project-find-go-module)
+#+end_src
+
+** LSP
+#+begin_src emacs-lisp
+(use-package eglot)
+#+end_src
+
 * Functions
 #+begin_src emacs-lisp
 (defun uuid ()
