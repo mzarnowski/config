@@ -34,6 +34,31 @@
     (auto-package-update-maybe))
 #+END_SRC
 
+** libraries
+*** list operations
+
+The *[[https://github.com/magnars/dash.el][dash]]* library simplifies working with lists (e.g. =--map= or =--filter= functions)
+
+#+BEGIN_SRC emacs-lisp
+  (use-package dash)
+#+END_SRC
+
+*** string operations
+
+The *[[https://github.com/magnars/s.el][s]]* library simplifies working with strings (e.g. =s-trim= or =s-pad-left= functions)
+
+#+BEGIN_SRC emacs-lisp
+  (use-package s)
+#+END_SRC
+
+*** file operations
+
+The *[[https://github.com/rejeep/f.el][f]]* library simplifies working with files (e.g. =f-read-text= or =f-ext=)
+
+#+BEGIN_SRC emacs-lisp
+  (use-package f)
+#+END_SRC
+
 * UI
 *** Theme
 **** Install and load themes
@@ -555,33 +580,6 @@ Alternatively, holymotion simplifies motions:
 #+end_src
 
 * Software Development
-
-** Elisp
-
-*** libraries
-**** list operations
-
-The *[[https://github.com/magnars/dash.el][dash]]* library simplifies working with lists (e.g. =--map= or =--filter= functions)
-
-#+BEGIN_SRC emacs-lisp
-  (use-package dash)
-#+END_SRC
-
-**** string operations
-
-The *[[https://github.com/magnars/s.el][s]]* library simplifies working with strings (e.g. =s-trim= or =s-pad-left= functions)
-
-#+BEGIN_SRC emacs-lisp
-  (use-package s)
-#+END_SRC
-
-**** file operations
-
-The *[[https://github.com/rejeep/f.el][f]]* library simplifies working with files (e.g. =f-read-text= or =f-ext=)
-
-#+BEGIN_SRC emacs-lisp
-  (use-package f)
-#+END_SRC
 
 *** testing
 #+begin_src emacs-lisp
