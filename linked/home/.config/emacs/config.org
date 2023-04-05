@@ -198,18 +198,30 @@ Let's have the clean buffers
 #+begin_src emacs-lisp
 (global-set-key (kbd "C-<tab>") #'consult-buffer)
 
-(global-set-key (kbd "<f1>") #'workspace-menu)
+(defun pop-to-shell (name)
+  (interactive (list (completing-read
+		      "Terminal: "
+		      (-map (lambda (it) (buffer-name it))
+			    (-filter (lambda (it) (with-current-buffer it
+						    (derived-mode-p 'eshell-mode)))
+				     (buffer-list))
+			    ))))
+  (let ((buffer (or (get-buffer name)
+		    (with-current-buffer (generate-new-buffer name)
+		      (eshell-mode)
+		      (current-buffer)))))
+    (pop-to-buffer buffer)))
 
+(global-set-key (kbd "C-!")  #'pop-to-shell)
 ;; disable suspending frames
 (global-unset-key (kbd "C-z"))
-(global-unset-key (kbd "C-x C-z"))
+(global-unset-key (kbd "C-<wheel-down>"))
+(global-unset-key (kbd "C-<wheel-up>"))
 #+end_src
 * Version Control
 ** Disable built-in version control module
 
 #+BEGIN_SRC emacs-lisp
-  ;; disable default vc-mode
-  (setq vc-handled-backends nil)
   (require 'vc)
   (eval-after-load "vc" '(remove-hook 'find-file-hook 'vc-find-file-hook))
   (eval-after-load "vc" '(remove-hook 'find-file-hook 'vc-refresh-state))
