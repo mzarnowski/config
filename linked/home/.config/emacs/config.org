@@ -230,10 +230,12 @@ Let's have the clean buffers
 ** Enable magit
 
 #+BEGIN_SRC emacs-lisp
-  (use-package magit
-    :config
-    (use-package git-gutter-fringe) ;; TODO icons are quite small
-    (git-gutter-mode))
+(use-package magit
+  :bind
+  ([remap magit-diff-visit-file] . magit-diff-visit-file-other-window)
+  :config
+  (use-package git-gutter-fringe) ;; TODO icons are quite small
+  (git-gutter-mode))
 #+END_SRC
 
 * System integration
@@ -346,13 +348,16 @@ Let's have the clean buffers
 ** Configure file backups
 
 #+BEGIN_SRC emacs-lisp
-  (setq backup-directory-alist `(("." . "~/.local/emacs/backup")))
-  (setq backup-by-copying-when-linked t)
+(setq backup-directory-alist `(("." . "~/.local/emacs/backup")
+			       (,tramp-file-name-regexp nil)))
+(setq backup-by-copying-when-linked t)
+(setq delete-old-versions t)
+(setq kept-new-versions   6)
+(setq kept-old-versions   2)
+(setq version-control     t)
 
-  (setq delete-old-versions t)
-  (setq kept-new-versions   6)
-  (setq kept-old-versions   2)
-  (setq version-control     t)
+(setq auto-save-file-name-transforms
+      `((".*" "~/.local/emacs/auto-save" t)))
 #+END_SRC
 
 ** Require confirmation before quitting
