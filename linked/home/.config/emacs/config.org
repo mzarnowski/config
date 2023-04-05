@@ -688,7 +688,10 @@ the popup for selecting targets from all matching keys. If set to nil, all match
   :ensure nil ; not to be downloaded
   :commands (dired dired-jump)
   :custom
-  (dired-listing-switches "-agho --group-directories-first")
+  (dired-listing-switches (pcase system-type
+				 (darwin "-agh")
+				 (t      "-agho --group-directories-first")))
+  (dired-use-ls-dired (not (eq system-type 'darwin)))
   :config
   (use-package dired-single) ;; reuse dired buffer
   (define-key dired-mode-map [remap dired-find-file] 'dired-single-buffer)
