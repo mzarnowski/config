@@ -808,7 +808,7 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 (defcustom +org-extension-rx (rx line-start (not ".") (one-or-more any) ".org" (optional ".gpg") line-end) "TODO")
 
 (defcustom +org-refile-default-target-query
-  '(or (heading "inbox") (heading "journal") (heading "insight") (heading "bookmarks")
+  '(or (heading "inbox") (heading "journal") (heading "insight") (heading "bookmarks") (heading "quotes")
        (parent (heading "milestones")))
   "TODO")
 
@@ -853,8 +853,7 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 (defcustom +org-backlink-drawer-name "DERIVED" "TODO")
 (defcustom +org-link-schema "+id" "TODO")
 
-(org-link-set-parameters +org-link-schema
-                         :follow #'+org-link-follow)
+(org-link-set-parameters +org-link-schema :follow #'+org-link-follow)
 
 (cl-defun +org-completing-read (entries &key prompt (key #'+org-refile-completing-target))
   (let ((table (+hash-map entries :key key :test #'equal)))
