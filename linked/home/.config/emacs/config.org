@@ -499,10 +499,12 @@ The *avy* package provides an easy way
 to jump to any visible character directly
 
 #+BEGIN_SRC emacs-lisp
-  (use-package avy
-    :config
-    (global-set-key (kbd "C-;") 'avy-goto-char-2)
-    (define-key isearch-mode-map (kbd "C-;") 'avy-isearch))
+(use-package avy
+  :config
+  (setq avy-orders-alist '((avy-goto-char   . avy-order-closest)
+			   (avy-goto-char-2 . avy-order-closest)))
+  (global-set-key (kbd "C-;") 'avy-goto-char-2)
+  (define-key isearch-mode-map (kbd "C-;") 'avy-isearch))
 #+END_SRC
 
 Alternatively, holymotion simplifies motions:
