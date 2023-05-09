@@ -794,7 +794,7 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 
 ** +complete
 #+begin_src emacs-lisp
-(cl-defun +completion-item (label &key group)
+(cl-defun +completion-item (label &key group &allow-other-keys)
   (let* ((group (or group "default"))
 	 (text (concat group " " label)))
     (propertize text :group group :label label)))
@@ -865,19 +865,24 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 
 (cl-defun +org-link-completing-read (workspace)
   (let* ((buffers-files (+org-workspace-files workspace))
-	 (entries (org-ql-select buffers-files +org-link-query
-		   :action (lambda () (list (point-marker)
-					    (cons :outline (org-get-outline-path t))
-					    (cons :id      (org-id-get)))))))
-    (+org-completing-read entries :prompt "Link: ")))
+	 (entries (org-ql-select buffers-files '(property "ID")
+		    :action (lambda () (let ((outline (org-get-outline-path t)))
+					 (list (car (last outline))
+					       :group  (car (last outline 2))
+					       :marker (point-marker)
+					       :id     (org-id-get))))))
+	  (table (+hash-map entries
+			    :key (lambda (it) (apply #'+completion-item it))
+			    :test #'equal)))
+    (+complete table :prompt "Link: ")))
 
 (cl-defun +org-link (workspace)
   (interactive '("mzarnowski"))
   (unless (derived-mode-p 'org-mode))
-  (if-let* ((selected (+org-link-completing-read workspace)))
-      (let ((id (alist-get :id selected))
-	    (name (car (last (alist-get :outline selected)))))
-	(insert (org-link-make-string (format "%s:%s:%s" +org-link-schema workspace id) name)))))
+  (if-let* ((selected (+org-link-completing-read workspace))
+	    (name (car selected))
+	    (id (plist-get (cdr selected) :id)))
+      (insert (org-link-make-string (format "%s:%s:%s" +org-link-schema workspace id) name))))
 
 (cl-defun +org-link-follow (link _)
   (-let* (((workspace id) (s-split ":" link))
