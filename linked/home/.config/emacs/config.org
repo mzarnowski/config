@@ -1,3 +1,5 @@
+#+PROPERTY: header-args    :results silent
+
 * Package Management
 ** Configure package sources
 #+BEGIN_SRC emacs-lisp
