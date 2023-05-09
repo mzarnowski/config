@@ -328,15 +328,18 @@ Let's have the clean buffers
   (:map corfu-map
 	("SPC" . corfu-insert-separator)
 	("<tab>" . corfu-next)
-        ("<backtab>" . corfu-previous))
+	("<backtab>" . corfu-previous))
   :init
   (global-corfu-mode)
-  (corfu-popupinfo-mode))
+  ;; (corfu-popupinfo-mode) currently fails with: corfu-post-command wrong-type number-or-marker t
+  )
 
 (defun corfu-enable-in-minibuffer ()
   "Enable Corfu in the minibuffer if `completion-at-point' is bound."
   (when (where-is-internal #'completion-at-point (list (current-local-map)))
     ;; (setq-local corfu-auto nil) Enable/disable auto completion
+    (setq-local corfu-echo-delay nil ;; Disable automatic echo and popup
+                corfu-popupinfo-delay nil)
     (corfu-mode 1)))
 
 ;; enable corfu for the eval (M-:) minibuffer
