@@ -887,15 +887,6 @@ the popup for selecting targets from all matching keys. If set to nil, all match
     (goto-char (marker-position marker))
     (end-of-line)))
 
-(cl-defun +org-refile-completing-target (it)
-  (let* ((outline (alist-get :outline (cdr it)))
-	 (name  (s-join "/" outline))
-	 (group (cond
-		 ((string= (nth 0 outline) "notes") "notes")
-		 ((string= (nth 0 outline) "project") (nth 1 outline))
-		 (t "general"))))
-    (print (propertize name 'group group))))
-
 (defcustom +org-workspace-current-file-name "current" "TODO")
 (cl-defun +org-workspace-current-file (workspace)
   (f-join +org-workspace-root workspace "org" (concat +org-workspace-current-file-name ".org")))
@@ -915,31 +906,57 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 	  :hook org-hide-drawer-all
 	  :before-finalize save-buffer))))
 
-(cl-defun +org-refile-available-targets (workspace &key (query +org-refile-default-target-query))
-  (let ((buffers-files (list (+org-workspace-current-file workspace))))
-    (org-ql-select buffers-files query
-      :action (lambda () (list (point-marker)
-			       (cons :outline (org-get-outline-path t)))))))
+(defcustom +org-refile-targets
+  '(("inbox")
+    ("Decisive: how to make better decisions"
+     :group "projects - books")
+    ("Change your questions - change your life"
+     :group "projects - books")
+    ("Range: Why Generalists Triumph in a Specialized World"
+     :group "projects - books")
+    ("Six Easy Pieces"
+     :group "projects - books")
+    ("Six Not so Easy Pieces"
+     :group "projects - books"))
+  "TODO")
 
 (cl-defun +org-refile-completing-read (workspace)
-  (let ((table (+hash-map (+org-refile-available-targets workspace)
-			  :key #'+org-refile-completing-target
+  (let ((table (+hash-map +org-refile-targets
+			  :key (lambda (it) (apply #'+completion-item it))
 			  :test #'equal)))
-    (car (+completing-read table :prompt "Target: "))))
+    (car (+complete table :prompt "Target: "))))
+
+(cl-defun +org-root-heading (buffer name)
+  (with-current-buffer buffer
+    (save-excursion
+      (or (org-find-exact-headline-in-buffer name)
+	  (progn
+	    (goto-char (point-min))
+	    (org-insert-heading)
+	    (insert name)
+	    (org-back-to-heading)
+	    (point-marker))))))
 
 (cl-defun +org-refile (workspace)
   (interactive '("mzarnowski"))
-  (when-let ((marker (+org-refile-completing-read workspace)))
-    (while (not (org-id-get)) (outline-up-heading 1))
-    (let ((name (org-with-point-at marker (nth 4 (org-heading-components))))
-	  (file (buffer-file-name (marker-buffer marker))))
-    (org-refile nil nil (list name file nil marker)))))
+  (save-excursion
+    (outline-back-to-heading t)
+    (while (and (< 1 (funcall outline-level)) (not (org-id-get)))
+      (outline-up-heading 1))
+    ;; TODO what, if no more headings and still no ID?
+    (when-let* ((heading (+org-refile-completing-read workspace))
+		(file    (+org-workspace-current-file workspace))
+		(marker  (+org-root-heading (find-file-noselect file) heading)))
+      (org-refile nil nil (list heading file nil marker)))))
 
 (cl-defun +org-capture (workspace)
   (interactive '("mzarnowski"))
-  (let ((keys (when (= 1 (length org-capture-templates))
-	       (caar org-capture-templates))))
-    (org-capture nil keys)))
+  (let ((file (+org-workspace-file workspace "inbox" (concat (uuid) ".org"))))
+    (with-current-buffer (find-file-noselect file)
+      (+org-capture-mode)
+      (pop-to-buffer (current-buffer)))))
+
+(define-derived-mode +org-capture-mode org-mode "Capture")
 
 (cl-defun +org-capture-refile (workspace)
   (interactive '("mzarnowski"))
