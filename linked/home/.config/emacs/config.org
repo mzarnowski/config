@@ -863,7 +863,7 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 
 (org-link-set-parameters +org-link-schema :follow #'+org-link-follow)
 
-(cl-defun +org-link-completing-read (workspace)
+(cl-defun +org-entry-completing-read (workspace &key prompt)
   (let* ((buffers-files (+org-workspace-files workspace))
 	 (entries (org-ql-select buffers-files '(property "ID")
 		    :action (lambda () (let ((outline (org-get-outline-path t)))
@@ -874,12 +874,34 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 	  (table (+hash-map entries
 			    :key (lambda (it) (apply #'+completion-item it))
 			    :test #'equal)))
-    (+complete table :prompt "Link: ")))
+    (+complete table :prompt prompt)))
+
+(defvar +org-open-entries (make-hash-table :test #'equal))
+
+(cl-defun +org-entry-to-indirect-buffer (marker)
+  (with-current-buffer (marker-buffer marker)
+    (save-excursion
+      (goto-char (marker-position marker))
+      (org-tree-to-indirect-buffer)))
+  (with-current-buffer org-last-indirect-buffer
+    (add-hook 'kill-buffer-hook (lambda () (remhash (org-id-get) +org-open-entries)) nil t)
+    (puthash id (current-buffer) +org-open-entries)
+    (current-buffer)))
+
+(cl-defun +org-entry-find (workspace)
+  (interactive '("mzarnowski"))
+  (when-let* ((selected (+org-entry-completing-read workspace :prompt "Entry: "))
+	      (id     (plist-get (cdr selected) :id))
+	      (marker (plist-get (cdr selected) :marker)))
+    (if-let* ((buffer (gethash id +org-open-entries))
+	      (_ (buffer-live-p buffer)))
+	(pop-to-buffer buffer)
+      (pop-to-buffer (+org-entry-to-indirect-buffer marker)))))
 
 (cl-defun +org-link (workspace)
   (interactive '("mzarnowski"))
   (unless (derived-mode-p 'org-mode))
-  (if-let* ((selected (+org-link-completing-read workspace))
+  (if-let* ((selected (+org-entry-completing-read workspace :prompt "Link: "))
 	    (name (car selected))
 	    (id (plist-get (cdr selected) :id)))
       (insert (org-link-make-string (format "%s:%s:%s" +org-link-schema workspace id) name))))
