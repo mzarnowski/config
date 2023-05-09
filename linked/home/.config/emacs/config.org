@@ -792,14 +792,18 @@ the popup for selecting targets from all matching keys. If set to nil, all match
     (gethash key table)))
 #+end_src
 
-** org-mode
+** +complete
+#+begin_src emacs-lisp
+(cl-defun +completion-item (label &key group)
+  (let* ((group (or group "default"))
+	 (text (concat group " " label)))
+    (propertize text :group group :label label)))
 
-#+BEGIN_SRC emacs-lisp
-(cl-defun +completing-read (table &key prompt)
+(cl-defun +complete (table &key prompt)
   (cl-labels ((group (candidate transform)
 		     (pcase transform
-		       (`nil (get-text-property 0 'group candidate))
-		       (_    candidate)))
+		       (`nil (get-text-property 0 :group candidate))
+		       (_    (get-text-property 0 :label candidate))))
 	      (collection (str pred flag)
 			  (pcase flag
 			    ('metadata (list 'metadata
@@ -807,15 +811,14 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 			    (`t (all-completions str table pred)))))
     (let ((key (completing-read prompt #'collection)))
       (gethash key table))))
+#+end_src
 
+** org-mode
+
+#+BEGIN_SRC emacs-lisp
 (use-package doct)
 (defcustom +org-workspace-root "~/workspace" "TODO")
 (defcustom +org-extension-rx (rx line-start (not ".") (one-or-more any) ".org" (optional ".gpg") line-end) "TODO")
-
-(defcustom +org-refile-default-target-query
-  '(or (heading "inbox") (heading "journal") (heading "insight") (heading "bookmarks") (heading "quotes")
-       (parent (heading "milestones")))
-  "TODO")
 
 (defcustom +org-link-query
   '(property "ID")
@@ -859,10 +862,6 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 (defcustom +org-link-schema "+id" "TODO")
 
 (org-link-set-parameters +org-link-schema :follow #'+org-link-follow)
-
-(cl-defun +org-completing-read (entries &key prompt (key #'+org-refile-completing-target))
-  (let ((table (+hash-map entries :key key :test #'equal)))
-    (+completing-read table :prompt prompt)))
 
 (cl-defun +org-link-completing-read (workspace)
   (let* ((buffers-files (+org-workspace-files workspace))
