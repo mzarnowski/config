@@ -205,7 +205,7 @@ Let's have the clean buffers
 		      "Terminal: "
 		      (-map (lambda (it) (buffer-name it))
 			    (-filter (lambda (it) (with-current-buffer it
-						    (derived-mode-p 'eshell-mode)))
+						    (derived-mode-p 'eshell-mode 'vterm-mode)))
 				     (buffer-list))
 			    ))))
   (let ((buffer (or (get-buffer name)
