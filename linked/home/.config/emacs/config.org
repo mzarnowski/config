@@ -824,8 +824,8 @@ the popup for selecting targets from all matching keys. If set to nil, all match
   '(property "ID")
   "TODO")
 
-(cl-defun +org-workspace-files (workspace)
-  (f-files (f-join +org-workspace-root workspace "org")
+(cl-defun +org-workspace-files (workspace &rest directories)
+  (f-files (apply #'f-join +org-workspace-root workspace "org" directories)
 	   (lambda (it) (string-match +org-extension-rx it))))
 
 ;; cannot be cl-defun, lands us at the start of the next line after the drawer opening
@@ -915,8 +915,10 @@ the popup for selecting targets from all matching keys. If set to nil, all match
     (end-of-line)))
 
 (defcustom +org-workspace-current-file-name "current" "TODO")
+(cl-defun +org-workspace-file (workspace &rest segments)
+  (apply #'f-join +org-workspace-root workspace "org" segments))
 (cl-defun +org-workspace-current-file (workspace)
-  (f-join +org-workspace-root workspace "org" (concat +org-workspace-current-file-name ".org")))
+  (+org-workspace-file workspace (concat +org-workspace-current-file-name ".org")))
 (cl-defun +org-template (&key keys workspace)
   (doct `((,workspace
 	  :keys ,keys
@@ -971,6 +973,8 @@ the popup for selecting targets from all matching keys. If set to nil, all match
     (while (and (< 1 (funcall outline-level)) (not (org-id-get)))
       (outline-up-heading 1))
     ;; TODO what, if no more headings and still no ID?
+    (unless (org-id-get)
+      (error "Cannot refile an entry without ID"))
     (when-let* ((heading (+org-refile-completing-read workspace))
 		(file    (+org-workspace-current-file workspace))
 		(marker  (+org-root-heading (find-file-noselect file) heading)))
@@ -980,16 +984,55 @@ the popup for selecting targets from all matching keys. If set to nil, all match
   (interactive '("mzarnowski"))
   (let ((file (+org-workspace-file workspace "inbox" (concat (uuid) ".org"))))
     (with-current-buffer (find-file-noselect file)
+      (org-mode)
       (+org-capture-mode)
       (pop-to-buffer (current-buffer)))))
 
-(define-derived-mode +org-capture-mode org-mode "Capture")
+(cl-defun +org-next-captured (workspace)
+  (interactive '("mzarnowski"))
+  (let ((files (+org-workspace-files workspace "inbox")))
+    (if files
+	(find-file (car files))
+      (message "Inbox is empty"))))
 
 (cl-defun +org-capture-refile (workspace)
   (interactive '("mzarnowski"))
-  (let ((org-capture-is-refiling t))
-    (and (+org-refile workspace)
-	 (kill-buffer))))
+  (save-excursion
+    (goto-char (point-min))
+    (when-let* ((heading (+org-refile-completing-read workspace))
+		(file    (+org-workspace-current-file workspace))
+		(marker  (+org-root-heading (find-file-noselect file) heading))
+		(title   (or (length= (org-ql-select (current-buffer) '(level 1)) 1)
+			     (completing-read "Title: " nil)))
+		(id      (or (not (null (org-id-get)))
+			     (org-id-new))))
+      ;; insert title and demote all subtrees
+      (when (stringp title)
+	;; insert root headline
+	(save-excursion
+	  (insert "* " title)
+	  (newline-and-indent))
+	;; demote all other trees
+	(save-excursion
+	  (while (and (not (eobp))
+		      (outline-next-heading))
+	    (org-demote))))
+
+      (when (stringp id)
+	(org-set-property "ID" id))
+
+      (org-refile nil nil (list heading file nil marker))
+      (delete-file (buffer-file-name))
+      (kill-buffer))))
+
+(define-minor-mode +org-capture-mode
+  "TODO"
+  :interactive nil
+  :init-value nil
+  :global nil
+  :lighter " +Cap"
+  :keymap (+define-keymap
+	   '([remap org-refile] "capture" +org-capture-refile)))
 
 (use-package org
   :bind
