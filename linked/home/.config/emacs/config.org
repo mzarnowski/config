@@ -813,25 +813,36 @@ the popup for selecting targets from all matching keys. If set to nil, all match
       (gethash key table))))
 #+end_src
 
-** org-mode
-
-#+BEGIN_SRC emacs-lisp
-(use-package doct)
+** +org-workspace
+#+begin_src emacs-lisp
 (defcustom +org-workspace-root "~/workspace" "TODO")
+(defcustom +org-workspace-default nil "TODO")
+
+(cl-defun +org-workspace-file (workspace &rest segments)
+  (apply #'f-join +org-workspace-root workspace "org" segments))
+
 (defcustom +org-extension-rx (rx line-start (not ".") (one-or-more any) ".org" (optional ".gpg") line-end) "TODO")
-
-(defcustom +org-link-query
-  '(property "ID")
-  "TODO")
-
 (cl-defun +org-workspace-files (workspace &rest directories)
   (f-files (apply #'f-join +org-workspace-root workspace "org" directories)
 	   (lambda (it) (string-match +org-extension-rx it))))
 
+(defcustom +org-workspace-current-file-name "current" "TODO")
+(cl-defun +org-workspace-current-file (workspace)
+  (+org-workspace-file workspace (concat +org-workspace-current-file-name ".org")))
+
+#+end_src
+
+** org-mode
+
+#+BEGIN_SRC emacs-lisp
+(use-package doct)
+(defcustom +org-link-query
+  '(property "ID")
+  "TODO")
+
 ;; cannot be cl-defun, lands us at the start of the next line after the drawer opening
 (defun +org-drawer-start-regexp (name)
   (rx line-start (* (or " " "	")) ":" (eval name) ":" (*? whitespace) line-end))
-
 
 (defun +org-drawer-store (name value &key unique)
   (save-excursion
@@ -914,11 +925,6 @@ the popup for selecting targets from all matching keys. If set to nil, all match
     (goto-char (marker-position marker))
     (end-of-line)))
 
-(defcustom +org-workspace-current-file-name "current" "TODO")
-(cl-defun +org-workspace-file (workspace &rest segments)
-  (apply #'f-join +org-workspace-root workspace "org" segments))
-(cl-defun +org-workspace-current-file (workspace)
-  (+org-workspace-file workspace (concat +org-workspace-current-file-name ".org")))
 (cl-defun +org-template (&key keys workspace)
   (doct `((,workspace
 	  :keys ,keys
@@ -927,7 +933,7 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 	  :todo-state "TODO"
 	  :headline "inbox"
 	  :template ("* %{todo-state} %?"
-	            "SCHEDULED: <%<%F>>"
+		    "SCHEDULED: <%<%F>>"
 		     ":PROPERTIES:"
 		     ":ID:         %(org-id-new)"
 		     ":CREATED-ON: %<%FT%R%z>"
@@ -1048,9 +1054,11 @@ the popup for selecting targets from all matching keys. If set to nil, all match
   (setq org-startup-with-inline-images t)
   (setq org-fontify-whole-heading-line t)
   (setq org-edit-src-content-indentation 0
-        org-src-tab-acts-natively        t
-        org-src-fontify-natively         t
-        org-confirm-babel-evaluate       nil)
+	org-src-tab-acts-natively        t
+	org-src-fontify-natively         t
+	org-confirm-babel-evaluate       nil)
+
+  (setq +org-workspace-default "mzarnowski")
 
   (setq org-capture-templates (-list (+org-template :keys "m" :workspace "mzarnowski")))
 
