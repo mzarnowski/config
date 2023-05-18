@@ -832,6 +832,78 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 
 #+end_src
 
+** book
+
+#+begin_src emacs-lisp
+(cl-defstruct book
+  (isbn         (error "Missing isbn")    :read-only)
+  (title        (error "Missing title")   :read-only)
+  (authors      (error "Missing authors") :read-only)
+  (published-by nil :read-only)
+  (published-on nil :read-only))
+
+(cl-defun book (isbn)
+  (or (book-load  isbn)
+      (book-download isbn)))
+
+(defvar book-catalogue nil "TODO")
+(defcustom book-catalogue-directory nil "TODO")
+
+(cl-defun book-catalogue-file ()
+  (f-join book-catalogue-directory "catalogue.txt"))
+(cl-defun book-cover-file (isbn)
+  (f-join book-catalogue-directory (format "cover-%s.jpg" isbn)))
+
+(cl-defun book-catalogue ()
+  (or book-catalogue
+      (setq book-catalogue (book-load-catalogue))))
+
+(cl-defun book-load (isbn)
+  (gethash isbn (book-catalogue)))
+
+(cl-defun book-load-catalogue ()
+  (let ((rows (when (f-exists? (book-catalogue-file))
+		(--> (f-read (book-catalogue-file))
+		     (split-string it "\n" t)
+		     (mapcar #'read it)))))
+    (+hash-map rows :key #'book-isbn :test #'equal)))
+
+(cl-defun book-download (isbn)
+  ;; create directories
+  (let ((directory (f-parent (book-catalogue-file))))
+    (unless (f-exists? directory)
+      (f-mkdir-full-path directory)))
+
+  (let ((json (book-curl isbn)))
+    (let ((entry     (make-book-from-json isbn json))
+	  (cover-uri (->> json (gethash "cover") (gethash "small"))))
+      (f-append (format "%S\n" entry) 'utf-8 (book-catalogue-file))
+      (call-process "curl" nil nil nil cover-uri "--output" (book-cover-file isbn))
+      (puthash isbn entry (book-catalogue)))))
+
+(cl-defun book-curl (isbn)
+  (let ((flags '("--disable" "--compressed" "--silent" "--location"))
+	(uri (format "https://openlibrary.org/api/books?bibkeys=%s&jscmd=data&format=json" isbn))) ; isbns can be comma-separated
+    (with-current-buffer (generate-new-buffer "*book-curl*")
+      (apply #'call-process "curl" nil t nil uri flags)
+      (goto-char (point-min))
+      (prog1 (gethash isbn (json-parse-buffer))
+	(kill-buffer (current-buffer))))))
+
+(cl-defun make-book-from-json (isbn json)
+  (make-book :isbn isbn
+	     :title   (gethash "title" json)
+	     :authors    (mapcar (lambda (it) (gethash "name" it)) (gethash "authors" json))
+	     :published-by (mapcar (lambda (it) (gethash "name" it)) (gethash "publishers" json))
+	     :published-on (gethash "publish-date" json)))
+
+
+#+end_src
+
+#+begin_src emacs-lisp
+(setq book-catalogue-directory "~/workspace/mzarnowski/org/books")
+#+end_src
+
 ** org-mode
 
 #+BEGIN_SRC emacs-lisp
