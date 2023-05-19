@@ -1138,7 +1138,8 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 #+begin_src emacs-lisp
 (use-package org
   :bind
-  ("C-c n i"                  . +org-capture)
+  ("C-c n n"                  . +org-capture)
+  ("C-c n i"                  . +org-next-captured)
   ([remap org-refile]         . +org-refile)
   ([remap org-capture-refile] . +org-capture-refile)
   :config
