@@ -794,12 +794,18 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 
 ** +complete
 #+begin_src emacs-lisp
-(cl-defun +completion-item (label &key group &allow-other-keys)
+(cl-defun +completion-item (label &key group (annotation nil) &allow-other-keys)
   (let* ((group (or group "default"))
-	 (text (concat group " " label)))
-    (propertize text :group group :label label)))
+	 (text (concat group " " label " " annotation)))
+    (propertize text :group group :label label :annotation annotation)))
 
-(cl-defun +complete (table &key prompt (category nil))
+(cl-defun +completion-annotation (candidate)
+  (let* ((annotation (get-text-property 0 :annotation candidate))
+	 (width   (length annotation))
+	 (padding (propertize " " 'display `(space :align-to (- right ,width)))))
+    (concat padding annotation)))
+
+(cl-defun +complete (table &key prompt (category nil) (annotate #'+completion-annotation))
   (cl-labels ((group (candidate transform)
 		     (pcase transform
 		       (`nil (get-text-property 0 :group candidate))
@@ -810,8 +816,8 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 					     (cons 'group-function #'group)
 					     (cons 'category category)))
 			    (`t (all-completions str table pred)))))
-    (let ((key (completing-read prompt #'collection)))
-      (gethash key table))))
+    (let ((completion-extra-properties (list :annotation-function annotate)))
+      (gethash (completing-read prompt #'collection) table))))
 #+end_src
 
 ** +org-workspace
