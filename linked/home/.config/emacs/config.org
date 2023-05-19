@@ -1019,7 +1019,70 @@ the popup for selecting targets from all matching keys. If set to nil, all match
     (goto-char (marker-position marker))
     (end-of-line)))
 
-(cl-defun +org-template (&key keys workspace)
+#+end_src
+
+** +org-refile
+
+#+begin_src emacs-lisp
+(defcustom +org-refile-target-providers '()
+  "TODO (name :keywords <list-of-strings>
+              :group <e.g. projects - books>
+              :properties <list of pairs>)")
+
+(cl-defun +org-refile (workspace)
+  (interactive '("mzarnowski"))
+  (save-excursion
+    (outline-back-to-heading t)
+    (while (and (< 1 (funcall outline-level)) (not (org-id-get)))
+      (outline-up-heading 1))
+    ;; TODO what, if no more headings and still no ID?
+    (unless (org-id-get)
+      (error "Cannot refile an entry without ID"))
+    (when-let* ((heading (+org-refile-completing-read workspace))
+		(file    (+org-workspace-current-file workspace))
+		(marker  (++org-refile-target-marker (find-file-noselect file) heading)))
+      (org-refile nil nil (list heading file nil marker)))))
+
+(cl-defun +org-refile-completing-read (workspace)
+  (let ((targets (+org-refile-targets workspace)))
+    (unless targets
+      (error "No place to refile to"))
+    (let ((table (+hash-map targets
+			    :key (lambda (it) (apply #'+completion-item it))
+			    :test #'equal)))
+      (car (+complete table :prompt "Target: ")))))
+
+(cl-defun +org-refile-targets (workspace)
+  (-flatten-n 1 (mapcar (lambda (f) (funcall f workspace)) +org-refile-target-providers)))
+
+(cl-defun +org-refile-target-marker (buffer name properties)
+  (with-current-buffer buffer
+    (save-excursion
+      (or (org-find-exact-headline-in-buffer name)
+	  (progn
+	    (goto-char (point-min))
+	    (outline-insert-heading)
+	    (insert " " name)
+            (-each properties (lambda (it) (apply #'org-set-property it)))
+	    (org-back-to-heading)
+	    (point-marker))))))
+#+end_src
+
+*** +org-refile-book extensions
+#+begin_src emacs-lisp
+(cl-defun +org-refile-book-targets (workspace)
+  (let ((books (book-catalogue))
+	(targets '()))
+    (maphash (lambda (isbn book) (push (list (book-title book) :group "projects - books") targets)) (book-catalogue))
+    targets))
+
+(add-hook '+org-refile-target-providers #'+org-refile-book-targets)
+#+end_src
+
+** +org-capture
+
+#+begin_src emacs-lisp
+(cl-defun +org-capture-template (&key keys workspace)
   (doct `((,workspace
 	  :keys ,keys
 	  :type entry
@@ -1034,51 +1097,6 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 		     ":END:")
 	  :hook org-hide-drawer-all
 	  :before-finalize save-buffer))))
-
-(defcustom +org-refile-targets
-  '(("inbox")
-    ("Decisive: how to make better decisions"
-     :group "projects - books")
-    ("Change your questions - change your life"
-     :group "projects - books")
-    ("Range: Why Generalists Triumph in a Specialized World"
-     :group "projects - books")
-    ("Six Easy Pieces"
-     :group "projects - books")
-    ("Six Not so Easy Pieces"
-     :group "projects - books"))
-  "TODO")
-
-(cl-defun +org-refile-completing-read (workspace)
-  (let ((table (+hash-map +org-refile-targets
-			  :key (lambda (it) (apply #'+completion-item it))
-			  :test #'equal)))
-    (car (+complete table :prompt "Target: "))))
-
-(cl-defun +org-root-heading (buffer name)
-  (with-current-buffer buffer
-    (save-excursion
-      (or (org-find-exact-headline-in-buffer name)
-	  (progn
-	    (goto-char (point-min))
-	    (org-insert-heading)
-	    (insert name)
-	    (org-back-to-heading)
-	    (point-marker))))))
-
-(cl-defun +org-refile (workspace)
-  (interactive '("mzarnowski"))
-  (save-excursion
-    (outline-back-to-heading t)
-    (while (and (< 1 (funcall outline-level)) (not (org-id-get)))
-      (outline-up-heading 1))
-    ;; TODO what, if no more headings and still no ID?
-    (unless (org-id-get)
-      (error "Cannot refile an entry without ID"))
-    (when-let* ((heading (+org-refile-completing-read workspace))
-		(file    (+org-workspace-current-file workspace))
-		(marker  (+org-root-heading (find-file-noselect file) heading)))
-      (org-refile nil nil (list heading file nil marker)))))
 
 (cl-defun +org-capture (workspace)
   (interactive '("mzarnowski"))
@@ -1133,7 +1151,11 @@ the popup for selecting targets from all matching keys. If set to nil, all match
   :lighter " +Cap"
   :keymap (+define-keymap
 	   '([remap org-refile] "capture" +org-capture-refile)))
+#+end_src
 
+** org-mode
+
+#+begin_src emacs-lisp
 (use-package org
   :bind
   ("C-c n i"                  . +org-capture)
@@ -1154,7 +1176,7 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 
   (setq +org-workspace-default "mzarnowski")
 
-  (setq org-capture-templates (-list (+org-template :keys "m" :workspace "mzarnowski")))
+  (setq org-capture-templates (-list (+org-capture-template :keys "m" :workspace "mzarnowski")))
 
   (setq org-agenda-file-regexp                 +org-extension-rx)
   (setq org-ql-search-directories-files-regexp +org-extension-rx)
