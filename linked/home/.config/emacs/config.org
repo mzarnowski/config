@@ -1024,11 +1024,9 @@ the popup for selecting targets from all matching keys. If set to nil, all match
     ;; TODO what, if no more headings and still no ID?
     (unless (org-id-get)
       (error "Cannot refile an entry without ID"))
-    (when-let* ((file     (+org-workspace-current-file workspace))
-		(selected (+org-refile-completing-read workspace))
-		(heading    (car selected))
-		(properties (plist-get (cdr selected) :properties))
-		(marker   (+org-refile-target-marker (find-file-noselect file) heading properties)))
+    (when-let* ((file    (+org-workspace-current-file workspace))
+		(heading (+org-refile-completing-read workspace))
+		(marker  (+org-refile-target-marker (find-file-noselect file) heading)))
       (org-refile nil nil (list heading file nil marker)))))
 
 (cl-defun +org-refile-completing-read (workspace)
@@ -1043,17 +1041,19 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 (cl-defun +org-refile-targets (workspace)
   (-flatten-n 1 (mapcar (lambda (f) (funcall f workspace)) +org-refile-target-providers)))
 
-(cl-defun +org-refile-target-marker (buffer name properties)
+(cl-defun +org-refile-target-marker (buffer heading)
   (with-current-buffer buffer
     (save-excursion
-      (or (org-find-exact-headline-in-buffer name)
-	  (progn
-	    (goto-char (point-min))
-	    (outline-insert-heading)
-	    (insert " " name)
-            (-each properties (lambda (it) (org-set-property (car it) (cdr it))))
-	    (org-back-to-heading)
-	    (point-marker))))))
+      (let ((name (car heading))
+	    (properties (plist-get (cdr heading) :properties)))
+	(or (org-find-exact-headline-in-buffer name)
+	    (progn
+	      (goto-char (point-min))
+	      (outline-insert-heading)
+	      (insert " " name)
+              (-each properties (lambda (it) (org-set-property (car it) (cdr it))))
+	      (org-back-to-heading)
+	      (point-marker)))))))
 #+end_src
 
 *** +org-refile-book extensions
@@ -1115,7 +1115,7 @@ the popup for selecting targets from all matching keys. If set to nil, all match
     (goto-char (point-min))
     (when-let* ((heading (+org-refile-completing-read workspace))
 		(file    (+org-workspace-current-file workspace))
-		(marker  (+org-root-heading (find-file-noselect file) heading))
+		(marker  (+org-refile-target-marker (find-file-noselect file) heading))
 		(title   (or (length= (org-ql-select (current-buffer) '(level 1)) 1)
 			     (completing-read "Title: " nil)))
 		(id      (or (not (null (org-id-get)))
