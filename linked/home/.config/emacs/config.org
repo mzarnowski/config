@@ -838,6 +838,7 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 (cl-defstruct book
   (isbn         (error "Missing isbn")    :read-only)
   (title        (error "Missing title")   :read-only)
+  (subtitle     nil :read-only)
   (authors      (error "Missing authors") :read-only)
   (published-by nil :read-only)
   (published-on nil :read-only))
@@ -892,19 +893,38 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 
 (cl-defun make-book-from-json (isbn json)
   (make-book :isbn isbn
-	     :title   (gethash "title" json)
+	     :title    (gethash "title" json)
+	     :subtitle (gethash "subtitle" json)
 	     :authors    (mapcar (lambda (it) (gethash "name" it)) (gethash "authors" json))
 	     :published-by (mapcar (lambda (it) (gethash "name" it)) (gethash "publishers" json))
-	     :published-on (gethash "publish-date" json)))
-
-
+	     :published-on (gethash "publish_date" json)))
 #+end_src
 
 #+begin_src emacs-lisp
 (setq book-catalogue-directory "~/workspace/mzarnowski/org/books")
 #+end_src
 
-** org-mode
+** +org-quote
+
+#+begin_src emacs-lisp
+(cl-defun +org-quote-refile-targets (workspace)
+  (cl-flet ((parse () (let ((outline (org-get-outline-path t))
+			    (book    (book (org-entry-get nil "ISBN"))))
+			(list (car (last outline))
+			      :group  "projects - books"
+			      :book   book
+			      :marker (point-marker)))))
+    (org-ql-select (+org-workspace-current-file workspace)
+      `(property "ISBN") :action #'parse)))
+
+(cl-defun +org-quotes (workspace)
+  (save-excursion
+    (goto-char (point-min))
+    (let ((quotes '()))
+      )))
+#+end_src
+
+** +org
 
 #+BEGIN_SRC emacs-lisp
 (use-package doct)
