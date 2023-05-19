@@ -1075,25 +1075,10 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 (add-hook '+org-refile-target-providers #'+org-refile-book-targets)
 #+end_src
 
+
 ** +org-capture
 
 #+begin_src emacs-lisp
-(cl-defun +org-capture-template (&key keys workspace)
-  (doct `((,workspace
-	  :keys ,keys
-	  :type entry
-	  :file ,(+org-workspace-current-file workspace)
-	  :todo-state "TODO"
-	  :headline "inbox"
-	  :template ("* %{todo-state} %?"
-		    "SCHEDULED: <%<%F>>"
-		     ":PROPERTIES:"
-		     ":ID:         %(org-id-new)"
-		     ":CREATED-ON: %<%FT%R%z>"
-		     ":END:")
-	  :hook org-hide-drawer-all
-	  :before-finalize save-buffer))))
-
 (cl-defun +org-capture (workspace)
   (interactive '("mzarnowski"))
   (let ((file (+org-workspace-file workspace "inbox" (concat (uuid) ".org"))))
@@ -1104,10 +1089,9 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 
 (cl-defun +org-next-captured (workspace)
   (interactive '("mzarnowski"))
-  (let ((files (+org-workspace-files workspace "inbox")))
-    (if files
-	(find-file (car files))
-      (message "Inbox is empty"))))
+  (if-let ((files (+org-workspace-files workspace "inbox")))
+      (find-file (car files))
+    (message "Inbox is empty")))
 
 (cl-defun +org-capture-refile (workspace)
   (interactive '("mzarnowski"))
@@ -1171,8 +1155,6 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 	org-confirm-babel-evaluate       nil)
 
   (setq +org-workspace-default "mzarnowski")
-
-  (setq org-capture-templates (-list (+org-capture-template :keys "m" :workspace "mzarnowski")))
 
   (setq org-agenda-file-regexp                 +org-extension-rx)
   (setq org-ql-search-directories-files-regexp +org-extension-rx)
