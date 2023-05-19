@@ -906,26 +906,6 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 (setq book-catalogue-directory "~/workspace/mzarnowski/org/books")
 #+end_src
 
-** +org-quote
-
-#+begin_src emacs-lisp
-(cl-defun +org-quote-refile-targets (workspace)
-  (cl-flet ((parse () (let ((outline (org-get-outline-path t))
-			    (book    (book (org-entry-get nil "ISBN"))))
-			(list (car (last outline))
-			      :group  "projects - books"
-			      :book   book
-			      :marker (point-marker)))))
-    (org-ql-select (+org-workspace-current-file workspace)
-      `(property "ISBN") :action #'parse)))
-
-(cl-defun +org-quotes (workspace)
-  (save-excursion
-    (goto-char (point-min))
-    (let ((quotes '()))
-      )))
-#+end_src
-
 ** +org
 
 #+BEGIN_SRC emacs-lisp
