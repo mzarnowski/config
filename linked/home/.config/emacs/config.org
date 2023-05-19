@@ -1061,6 +1061,7 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 (cl-defun +org-refile-book-target (book)
   (list (book-title book)
 	:group "projects - books"
+	:annotation (string-join (book-authors book) "; ")
 	:properties (list (cons "ISBN" (book-isbn book)))))
 
 (cl-defun +org-refile-book-targets (workspace)
