@@ -799,7 +799,7 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 	 (text (concat group " " label)))
     (propertize text :group group :label label)))
 
-(cl-defun +complete (table &key prompt)
+(cl-defun +complete (table &key prompt (category nil))
   (cl-labels ((group (candidate transform)
 		     (pcase transform
 		       (`nil (get-text-property 0 :group candidate))
@@ -807,7 +807,8 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 	      (collection (str pred flag)
 			  (pcase flag
 			    ('metadata (list 'metadata
-					     (cons 'group-function #'group)))
+					     (cons 'group-function #'group)
+					     (cons 'category category)))
 			    (`t (all-completions str table pred)))))
     (let ((key (completing-read prompt #'collection)))
       (gethash key table))))
