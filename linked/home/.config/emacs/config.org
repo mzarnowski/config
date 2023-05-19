@@ -874,12 +874,14 @@ the popup for selecting targets from all matching keys. If set to nil, all match
   (let ((directory (f-parent (book-catalogue-file))))
     (unless (f-exists? directory)
       (f-mkdir-full-path directory)))
-
+  (message "Downloading metadata for ISBN:%s" isbn)
   (let ((json (book-curl isbn)))
-    (let ((entry     (make-book-from-json isbn json))
-	  (cover-uri (->> json (gethash "cover") (gethash "small"))))
+    ;; fetch cover, if available
+    (when-let ((cover-json (gethash "cover" json))
+	       (cover-uri  (gethash "small" cover-json)))
+      (call-process "curl" nil nil nil cover-uri "--output" (book-cover-file isbn)))
+    (let ((entry (make-book-from-json isbn json)))
       (f-append (format "%S\n" entry) 'utf-8 (book-catalogue-file))
-      (call-process "curl" nil nil nil cover-uri "--output" (book-cover-file isbn))
       (puthash isbn entry (book-catalogue)))))
 
 (cl-defun book-curl (isbn)
