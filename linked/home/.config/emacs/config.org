@@ -794,8 +794,9 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 
 ** +complete
 #+begin_src emacs-lisp
-(cl-defun +completion-item (label &key group (annotation nil) &allow-other-keys)
-  (let* ((group (or group "default"))
+(cl-defun +completion-item (&key path group (annotation nil) &allow-other-keys)
+  (let* ((label (s-join " - " path))
+	 (group (or group "default"))
 	 (text (concat group " " label " " annotation)))
     (propertize text :group group :label label :annotation annotation)))
 
@@ -1024,9 +1025,9 @@ the popup for selecting targets from all matching keys. If set to nil, all match
     ;; TODO what, if no more headings and still no ID?
     (unless (org-id-get)
       (error "Cannot refile an entry without ID"))
-    (when-let* ((file    (+org-workspace-current-file workspace))
-		(heading (+org-refile-completing-read workspace))
-		(marker  (+org-refile-target-marker (find-file-noselect file) heading)))
+    (when-let* ((file   (+org-workspace-current-file workspace))
+		(target (+org-refile-completing-read workspace))
+		(marker (+org-refile-target-marker (find-file-noselect file) target)))
       (org-refile nil nil (list heading file nil marker)))))
 
 (cl-defun +org-refile-completing-read (workspace)
@@ -1041,25 +1042,42 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 (cl-defun +org-refile-targets (workspace)
   (-flatten-n 1 (mapcar (lambda (f) (funcall f workspace)) +org-refile-target-providers)))
 
-(cl-defun +org-refile-target-marker (buffer heading)
-  (with-current-buffer buffer
-    (save-excursion
-      (let ((name (car heading))
-	    (properties (plist-get (cdr heading) :properties)))
-	(or (org-find-exact-headline-in-buffer name)
-	    (progn
-	      (goto-char (point-min))
-	      (outline-insert-heading)
-	      (insert " " name)
-              (-each properties (lambda (it) (org-set-property (car it) (cdr it))))
-	      (org-back-to-heading)
-	      (point-marker)))))))
+(cl-defun +org-refile-target-marker (buffer target)
+  (let ((path       (plist-get target :path))
+	(properties (plist-get target :properties)))
+    (with-current-buffer buffer
+      (save-excursion
+	(goto-char (point-min))
+	(+org-refile-find-or-create path properties)))))
+
+(cl-defun +org-refile-find-or-create (path properties)
+  (cl-loop for name in path
+	   for level = (if level (1+ level) (org-current-level))
+	   for marker = (+org-search-heading level name)
+	   while marker
+
+	   finally do (unless marker
+			(cl-loop for name in (-drop (1- level) path)
+				 do (org-insert-subheading nil)
+				 do (insert name))
+			(-each properties (lambda (it) (org-set-property (car it) (cdr it)))))
+	   finally return (point-marker)))
+
+(cl-defun +org-search-heading (level name)
+  (cl-loop with position = (point)
+	   while (re-search-forward org-complex-heading-regexp nil t)
+	   for level-diff = (- (length (match-string 1)) level)
+	   for heading    = (match-string 4)
+	   for found      = (and (= 0 level-diff) (string= name heading))
+	   until (or found (< level-diff 0))
+	   finally do (unless found (goto-char position))
+	   finally return (when found (point-marker))))
 #+end_src
 
 *** +org-refile-book extensions
 #+begin_src emacs-lisp
 (cl-defun +org-refile-book-target (book)
-  (list (book-title book)
+  (list :path (list (book-title book))
 	:group "projects - books"
 	:annotation (string-join (book-authors book) "; ")
 	:properties (list (cons "ISBN" (book-isbn book)))))
