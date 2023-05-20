@@ -1093,6 +1093,14 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 (add-hook '+org-refile-target-providers #'+org-refile-book-targets)
 #+end_src
 
+*** +org-refile-journal extension
+#+begin_src emacs-lisp
+(cl-defun +org-refile-journal-target (workspace)
+  (list (list :path `("journal" ,(format-time-string "%F"))
+	      :group "default")))
+
+(add-hook '+org-refile-target-providers #'+org-refile-journal-target)
+#+end_src
 
 ** +org-capture
 
