@@ -794,8 +794,8 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 
 ** +complete
 #+begin_src emacs-lisp
-(cl-defun +completion-item (&key path group (annotation nil) &allow-other-keys)
-  (let* ((label (s-join " - " path))
+(cl-defun +completion-item (&key outline group (annotation nil) &allow-other-keys)
+  (let* ((label (s-join " - " (-map #'car outline)))
 	 (group (or group "default"))
 	 (text (concat group " " label " " annotation)))
     (propertize text :group group :label label :annotation annotation)))
@@ -1043,24 +1043,28 @@ the popup for selecting targets from all matching keys. If set to nil, all match
   (-flatten-n 1 (mapcar (lambda (f) (funcall f workspace)) +org-refile-target-providers)))
 
 (cl-defun +org-refile-target-marker (buffer target)
-  (let ((path       (plist-get target :path))
+  (let ((outline    (plist-get target :outline))
 	(properties (plist-get target :properties)))
     (with-current-buffer buffer
       (save-excursion
 	(goto-char (point-min))
-	(+org-refile-find-or-create path properties)))))
+	(+org-refile-find-or-create outline properties)))))
 
-(cl-defun +org-refile-find-or-create (path properties)
-  (cl-loop for name in path
+(cl-defun +org-refile-find-or-create (outline properties)
+  (cl-loop for segment in outline
+	   for name       = (car segment)
+	   for properties = (cdr segment)
+
 	   for level = (if level (1+ level) (org-current-level))
 	   for marker = (+org-search-heading level name)
 	   while marker
 
 	   finally do (unless marker
-			(cl-loop for name in (-drop (1- level) path)
-				 do (org-insert-subheading nil)
-				 do (insert name))
-			(-each properties (lambda (it) (org-set-property (car it) (cdr it)))))
+			(cl-loop for segment in (-drop (1- level) outline)
+				 for name       = (car segment)
+				 for properties = (cdr segment)
+
+				 do (+org-insert-subheading name properties)))
 	   finally return (point-marker)))
 
 (cl-defun +org-search-heading (level name)
@@ -1072,15 +1076,31 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 	   until (or found (< level-diff 0))
 	   finally do (unless found (goto-char position))
 	   finally return (when found (point-marker))))
+
+(cl-defun +org-insert-subheading (name properties)
+  (org-insert-subheading nil)
+  (insert name)
+  (cl-loop for key   in      properties  by #'cddr
+	   for value in (cdr properties) by #'cddr
+
+	   for key   = (+org-to-string key)
+	   for value = (+org-to-string value)
+	   do (org-set-property key value)))
+
+(cl-defun +org-to-string (it)
+  (s-upcase (cl-typecase it
+	      (string  it)
+	      (symbol  (string-trim-left (symbol-name it) (rx ":")))
+	      (integer (int-to-string it))
+	      (t (error "Unsupported type %s" (type-of it))))))
 #+end_src
 
 *** +org-refile-book extensions
 #+begin_src emacs-lisp
 (cl-defun +org-refile-book-target (book)
-  (list :path (list (book-title book))
+  (list :outline `((,(book-title book) :ISBN ,(book-isbn book)))
 	:group "projects - books"
-	:annotation (string-join (book-authors book) "; ")
-	:properties (list (cons "ISBN" (book-isbn book)))))
+	:annotation (string-join (book-authors book) "; ")))
 
 (cl-defun +org-refile-book-targets (workspace)
   (let ((books (book-catalogue))
@@ -1096,7 +1116,7 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 *** +org-refile-journal extension
 #+begin_src emacs-lisp
 (cl-defun +org-refile-journal-target (workspace)
-  (list (list :path `("journal" ,(format-time-string "%F"))
+  (list (list :outline `(("journal") (,(format-time-string "%F")))
 	      :group "default")))
 
 (add-hook '+org-refile-target-providers #'+org-refile-journal-target)
