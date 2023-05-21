@@ -796,7 +796,7 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 #+begin_src emacs-lisp
 (cl-defun +completion-item (&key outline group (annotation nil) &allow-other-keys)
   (let* ((label (s-join " - " (-map #'car outline)))
-	 (group (or group "default"))
+	 (group (if group (s-join " - " group) "default"))
 	 (text (concat group " " label " " annotation)))
     (propertize text :group group :label label :annotation annotation)))
 
@@ -1099,7 +1099,7 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 #+begin_src emacs-lisp
 (cl-defun +org-refile-book-target (book)
   (list :outline `((,(book-title book) :ISBN ,(book-isbn book)))
-	:group "projects - books"
+	:group '("projects" "books")
 	:annotation (string-join (book-authors book) "; ")))
 
 (cl-defun +org-refile-book-targets (workspace)
@@ -1116,8 +1116,7 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 *** +org-refile-journal extension
 #+begin_src emacs-lisp
 (cl-defun +org-refile-journal-target (workspace)
-  (list (list :outline `(("journal") (,(format-time-string "%F")))
-	      :group "default")))
+  (list (list :outline `(("journal") (,(format-time-string "%F"))))))
 
 (add-hook '+org-refile-target-providers #'+org-refile-journal-target)
 #+end_src
