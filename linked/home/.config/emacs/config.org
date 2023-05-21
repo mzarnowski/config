@@ -808,9 +808,8 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 
 (cl-defun +complete (table &key prompt (category nil) (annotate #'+completion-annotation))
   (cl-labels ((group (candidate transform)
-		     (pcase transform
-		       (`nil (get-text-property 0 :group candidate))
-		       (_    (get-text-property 0 :label candidate))))
+		     (let ((property (if transform :label :group)))
+		       (get-text-property 0 property candidate)))
 	      (collection (str pred flag)
 			  (pcase flag
 			    ('metadata (list 'metadata
