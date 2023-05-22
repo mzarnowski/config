@@ -1069,7 +1069,9 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 
 	   for level = (if level (1+ level) (or (org-current-level) 1))
 	   for marker = (+org-search-heading level name)
+
 	   while marker
+	   do (+org-set-properties properties)
 
 	   finally return (or marker (+org-outline-create level path))))
 
