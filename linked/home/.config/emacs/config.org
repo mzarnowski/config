@@ -794,11 +794,13 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 
 ** +complete
 #+begin_src emacs-lisp
-(cl-defun +completion-item (&key outline group (annotation nil) &allow-other-keys)
-  (let* ((label (s-join " - " (-map #'car outline)))
-	 (group (if group (s-join " - " group) "default"))
-	 (text (concat group " " label " " annotation)))
-    (propertize text :group group :label label :annotation annotation)))
+(cl-defun +completion-item (&key label (group nil) (annotation nil))
+  (let ((candidate (s-join " " (-flatten (list label group annotation))))
+	(label     (cl-typecase label
+		     (list   (s-join " - " label))
+		     (string label)))
+	(group     (if group (s-join " - " group) "default")))
+    (propertize candidate :label label :group group :annotation annotation)))
 
 (cl-defun +completion-annotation (candidate)
   (let* ((annotation (get-text-property 0 :annotation candidate))
@@ -1034,23 +1036,29 @@ the popup for selecting targets from all matching keys. If set to nil, all match
     (unless targets
       (error "No place to refile to"))
     (let ((table (+hash-map targets
-			    :key (lambda (it) (apply #'+completion-item it))
+			    :key #'+org-refile-completion-item
 			    :test #'equal)))
       (+complete table :prompt "Target: "))))
 
 (cl-defun +org-refile-targets (workspace)
   (-flatten-n 1 (mapcar (lambda (f) (funcall f workspace)) +org-refile-target-providers)))
 
-(cl-defun +org-refile-target-marker (buffer target)
-  (let ((outline    (plist-get target :outline))
-	(properties (plist-get target :properties)))
-    (with-current-buffer buffer
-      (save-excursion
-	(goto-char (point-min))
-	(+org-refile-find-or-create outline properties)))))
+(cl-defun +org-refile-completion-item (target)
+  (let ((group      (plist-get target :group))
+	(annotation (plist-get target :annotation))
+	(label (mapcar #'car (plist-get target :path))))
+    (+completion-item :label label :group group :annotation annotation)))
 
-(cl-defun +org-refile-find-or-create (outline properties)
-  (cl-loop for segment in outline
+(cl-defun +org-refile-target-marker (buffer target)
+  (with-current-buffer buffer
+    (save-excursion
+      (goto-char (point-min))
+      (+org-refile-find-or-create target))))
+
+(cl-defun +org-refile-find-or-create (target)
+  (cl-loop with outline = (plist-get target :outline)
+
+	   for segment in outline
 	   for name       = (car segment)
 	   for properties = (cdr segment)
 
@@ -1097,7 +1105,7 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 *** +org-refile-book extensions
 #+begin_src emacs-lisp
 (cl-defun +org-refile-book-target (book)
-  (list :outline `((,(book-title book) :ISBN ,(book-isbn book)))
+  (list :path `((,(book-title book) :ISBN ,(book-isbn book)))
 	:group '("projects" "books")
 	:annotation (string-join (book-authors book) "; ")))
 
@@ -1115,7 +1123,7 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 *** +org-refile-journal extension
 #+begin_src emacs-lisp
 (cl-defun +org-refile-journal-target (workspace)
-  (list (list :outline `(("journal") (,(format-time-string "%F"))))))
+  (list (list :path `(("journal") (,(format-time-string "%F"))))))
 
 (add-hook '+org-refile-target-providers #'+org-refile-journal-target)
 #+end_src
