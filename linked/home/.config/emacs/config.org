@@ -819,7 +819,7 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 					     (cons 'category category)))
 			    (`t (all-completions str table pred)))))
     (let ((completion-extra-properties (list :annotation-function annotate)))
-      (gethash (completing-read prompt #'collection) table))))
+      (completing-read prompt #'collection))))
 #+end_src
 
 ** +org-workspace
@@ -964,10 +964,10 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 					       :group  (car (last outline 2))
 					       :marker (point-marker)
 					       :id     (org-id-get))))))
-	  (table (+hash-map entries
-			    :key (lambda (it) (apply #'+completion-item it))
-			    :test #'equal)))
-    (+complete table :prompt prompt)))
+	 (table (+hash-map entries
+			   :key (lambda (it) (apply #'+completion-item it))
+			   :test #'equal)))
+    (gethash (+complete table :prompt prompt) table)))
 
 (defvar +org-open-entries (make-hash-table :test #'equal))
 
@@ -1035,58 +1035,84 @@ the popup for selecting targets from all matching keys. If set to nil, all match
   (let ((targets (+org-refile-targets workspace)))
     (unless targets
       (error "No place to refile to"))
-    (let ((table (+hash-map targets
-			    :key #'+org-refile-completion-item
-			    :test #'equal)))
-      (+complete table :prompt "Target: "))))
+    (let* ((table     (+hash-map targets :key #'+org-refile-completion-item :test #'equal))
+	   (selection (+complete table :prompt "Target: ")))
+      (or (gethash selection table) selection))))
 
 (cl-defun +org-refile-targets (workspace)
   (-flatten-n 1 (mapcar (lambda (f) (funcall f workspace)) +org-refile-target-providers)))
 
 (cl-defun +org-refile-completion-item (target)
-  (let ((group      (plist-get target :group))
+  (let ((group      (or (plist-get target :group) '("projects")))
 	(annotation (plist-get target :annotation))
 	(label (mapcar #'car (plist-get target :path))))
     (+completion-item :label label :group group :annotation annotation)))
 
 (cl-defun +org-refile-target-marker (buffer target)
-  (with-current-buffer buffer
-    (save-excursion
-      (goto-char (point-min))
-      (+org-refile-find-or-create target))))
+  (when-let ((path (cl-typecase target
+		     (list   (plist-get target :path))
+		     (string (when (y-or-n-p (format "Create project %s? " target))
+			       `((,target :group "projects")))))))
+    (with-current-buffer buffer
+      (save-excursion
+	(goto-char (point-min))
+	(+org-refile-find-or-create path)))))
 
-(cl-defun +org-refile-find-or-create (target)
-  (cl-loop with outline = (plist-get target :outline)
+(cl-defun +org-refile-target-create (buffer name)
+  (when (y-or-n-p (format "Create project %s?" name))
+    (+org-refile-find)))
 
-	   for segment in outline
+(cl-defun +org-refile-find-or-create (path)
+  (cl-loop for segment in path
 	   for name       = (car segment)
 	   for properties = (cdr segment)
 
-	   for level = (if level (1+ level) (org-current-level))
+	   for level = (if level (1+ level) (or (org-current-level) 1))
 	   for marker = (+org-search-heading level name)
 	   while marker
 
-	   finally do (unless marker
-			(cl-loop for segment in (-drop (1- level) outline)
-				 for name       = (car segment)
-				 for properties = (cdr segment)
-
-				 do (+org-insert-subheading name properties)))
-	   finally return (point-marker)))
+	   finally return (or marker (+org-outline-create level path))))
 
 (cl-defun +org-search-heading (level name)
   (cl-loop with position = (point)
 	   while (re-search-forward org-complex-heading-regexp nil t)
+
 	   for level-diff = (- (length (match-string 1)) level)
 	   for heading    = (match-string 4)
 	   for found      = (and (= 0 level-diff) (string= name heading))
+
 	   until (or found (< level-diff 0))
-	   finally do (unless found (goto-char position))
+
+	   finally do     (unless found (goto-char position))
 	   finally return (when found (point-marker))))
+
+(cl-defun +org-outline-create (level path)
+  (cl-loop with top-level = (when (= 1 level) (car path))
+	   initially do (when top-level
+			  (+org-insert-heading (car top-level) (cdr top-level)))
+
+	   with segments  = (if top-level (cdr path) (-drop (1- level) path))
+
+	   for segment in segments
+	   for name       = (car segment)
+	   for properties = (cdr segment)
+
+	   do (+org-insert-subheading name properties)
+
+	   finally do     (when properties (outline-back-to-heading) (end-of-line))
+	   finally return (point-marker)))
+
+(cl-defun +org-insert-heading (name properties)
+  (org-insert-heading nil t t)
+  (insert name)
+  (+org-set-properties properties))
 
 (cl-defun +org-insert-subheading (name properties)
   (org-insert-subheading nil)
   (insert name)
+  (+org-set-properties properties))
+
+(cl-defun +org-set-properties (properties)
   (cl-loop for key   in      properties  by #'cddr
 	   for value in (cdr properties) by #'cddr
 
