@@ -269,13 +269,15 @@ Let's have the clean buffers
 (defvar tramp-docker-parameters
   '((tramp-login-program "docker")
     (tramp-login-args (("exec" "-it") ("%h") ("/bin/bash")))
-    (tramp-remote-shell "/bin/sh")
+    (tramp-remote-path tramp-own-remote-path)
+    (tramp-remote-shell "/bin/bash")
     (tramp-remote-shell-args ("-i") ("-c"))))
 
 (use-package tramp
   :config
-  (print ">tramp")
-  (push (cons "docker" tramp-docker-parameters) tramp-methods))
+  (push (cons "docker" tramp-docker-parameters) tramp-methods)
+  (push (cons "docker" (alist-get 'tramp-remote-shell tramp-docker-parameters))
+	vterm-tramp-shells))
 
 (defun tramp-docker-containers ()
   (let* ((command "docker ps | awk '$NF != \"NAMES\" { print $NF \":\" }'")
