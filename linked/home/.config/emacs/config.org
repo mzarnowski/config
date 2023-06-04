@@ -286,10 +286,13 @@ Let's have the clean buffers
 					(format "%d" (kafka-topic-replicas topic)))))
 	  entries)))
 
-(defun kafka-topics-create (bootstrap-server name)
+(cl-defun kafka-topics-create (bootstrap-server name &optional (partitions 1) (replicas 1))
   (interactive (list kafka-bootstrap-server
 		     (read-string "Topic Name: ")))
-  (message (--> (kafka-topics-sh bootstrap-server "--create" "--topic" name)
+  (message (--> (kafka-topics-sh bootstrap-server "--create"
+				 "--topic" name
+				 "--partitions" partitions
+				 "--replication-factor" replicas)
 		(shell-command-to-string it)
 		(s-trim it)))
   (kafka-topics-mode-refresh bootstrap-server))
@@ -327,9 +330,9 @@ Let's have the clean buffers
 	   (number     (+? digit))
 	   (topic-name   (item "Topic" (group-n 1 identifier)))
 	   (partition-id (item "Partition" (group-n 2 number)))
-	   (leader   (item "Leader" (group-n 3 number)))
-	   (replicas (item "Replicas" (group-n 4 number)))
-	   (isr  (item "Isr" (group-n 5 number))))
+	   (leader   (item "Leader" (group-n 3 number)))   ;; broker id? same for replicas and isr
+	   (replicas (item "Replicas" (group-n 4 number))) ;; TODO comma separated numbers
+	   (isr  (item "Isr" (group-n 5 number))))         ;; TODO in-sync-replicas
     (cl-loop do (forward-char) ;; position at the start of line
 	     while (+rx-forward point topic-name partition-id leader replicas isr line-end)
 	     for partition-id       = (match-string 2)
@@ -337,6 +340,28 @@ Let's have the clean buffers
 	     for partition-replicas = (string-to-number (match-string 4))
 	     collect (list partition-id partition-leader partition-replicas))))
 #+end_src
+
+*** kafka-consume
+#+begin_src emacs-lisp
+(cl-defun kafka-consume (bootstrap-server topic)
+  (interactive
+   (let* ((bootstrap-server (read-string "Bootstrap server: "))
+	  (topics (-map #'kafka-topic-name (kafka-topics-describe bootstrap-server)))
+	  (topic (completing-read "Topic: " topics)))
+     (list bootstrap-server topic)))
+  (with-current-buffer (generate-new-buffer (format "kafka:%s@%s" topic bootstrap-server))
+    (read-only-mode)
+    (start-process (buffer-name) (current-buffer)
+		   "kafka-console-consumer.sh"
+		   "--bootstrap-server" bootstrap-server
+		   "--topic" topic
+		   "--formatter" "kafka.tools.DefaultMessageFormatter"
+		   "--property"  "print.timestamp=true"
+		   "--property"  "print.partition=true"
+		   "--from-beginning")
+    (pop-to-buffer (current-buffer))))
+#+end_src
+
 ** Volume management
 #+begin_src emacs-lisp
 (use-package volume
