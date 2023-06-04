@@ -241,6 +241,102 @@ Let's have the clean buffers
 #+END_SRC
 
 * System integration
+** Kafka
+#+begin_src emacs-lisp
+(defvar-local kafka-bootstrap-server nil)
+
+(cl-defstruct kafka-topic
+  (id   (error "topic needs an id") :read-only)
+  (name (error "topic needs a name") :read-only)
+  (partitions (error "missing partitions") :read-only)
+  (replicas   (error "missing replicas") :read-only))
+#+end_src
+
+*** kafka-topics
+#+begin_src  emacs-lisp
+(define-derived-mode kafka-topics-mode tabulated-list-mode "kafka-topics"
+  :interactive nil
+  :group "kafka"
+  (setq tabulated-list-use-header-line t)
+  (setq kafka-bootstrap-server "localhost:9092")
+  (setq tabulated-list-format (vector '("Topic" 32 t)
+				      '("Partitions" 12 t)
+				      '("Replicas"   12 t)))
+  (tabulated-list-init-header)
+  (setq tabulated-list-entries (kafka-topics-mode-entries))
+  (add-hook 'tabulated-list-revert-hook
+	    (lambda () (setq tabulated-list-entries (kafka-topics-mode-entries)))
+	    nil t))
+
+(defvar kafka-topics-mode-map
+  (+define-keymap
+   '("C-+" "create topic" kafka-topics-create)))
+
+(cl-defun kafka-topics-mode-refresh (bootstrap-server)
+  (when (and (derived-mode-p 'kafka-topics-mode)
+	     (string= kafka-bootstrap-server bootstrap-server))
+    (message "Refreshing topic list")
+    (tabulated-list-revert)))
+
+(cl-defun kafka-topics-mode-entries ()
+  (let ((entries (kafka-topics-describe kafka-bootstrap-server)))
+    (-map (lambda (topic) (list (kafka-topic-id topic)
+				(vector (kafka-topic-name topic)
+					(format "%d" (length (kafka-topic-partitions topic)))
+					(format "%d" (kafka-topic-replicas topic)))))
+	  entries)))
+
+(defun kafka-topics-create (bootstrap-server name)
+  (interactive (list kafka-bootstrap-server
+		     (read-string "Topic Name: ")))
+  (message (--> (kafka-topics-sh bootstrap-server "--create" "--topic" name)
+		(shell-command-to-string it)
+		(s-trim it)))
+  (kafka-topics-mode-refresh bootstrap-server))
+
+(cl-defun kafka-topics-sh (bootstrap-server &rest arguments)
+  (format "kafka-topics.sh --bootstrap-server %s %s" bootstrap-server (s-join " " arguments)))
+
+(defun kafka-topics-describe (bootstrap-server &rest topics)
+  (interactive (list kafka-bootstrap-server nil))
+  (with-current-buffer (generate-new-buffer "kafka-topics")
+    (let ((command (kafka-topics-sh bootstrap-server "--describe")))
+      (shell-command command t))
+    (goto-char (point-min))
+    (kafka-topics-describe--parse-topics)))
+
+(cl-defun kafka-topics-describe--parse-topics ()
+  (rx-let ((item (name value) (seq (literal name) ": " value "\t"))
+	   (identifier (+? (or word punct)))
+	   (number     (+? digit))
+	   (topic-name  (item "Topic" (group-n 1 identifier)))
+	   (topic-id    (item "TopicId" (group-n 2 identifier)))
+	   (part-count  (item "PartitionCount" (group-n 3 number)))
+	   (replication (item "ReplicationFactor" (group-n 4 number))))
+    (cl-loop while (+rx-forward point line-start
+				topic-name topic-id part-count replication
+				(*? any) line-end)
+	     collect (make-kafka-topic :id   (match-string 2)
+				       :name (match-string 1)
+				       :replicas   (string-to-number (match-string 4))
+				       :partitions (kafka-topics-describe--parse-partitions)))))
+
+(cl-defun kafka-topics-describe--parse-partitions ()
+  (rx-let ((item (name value) (seq "\t" (literal name) ": " value))
+	   (identifier (+? (or word punct)))
+	   (number     (+? digit))
+	   (topic-name   (item "Topic" (group-n 1 identifier)))
+	   (partition-id (item "Partition" (group-n 2 number)))
+	   (leader   (item "Leader" (group-n 3 number)))
+	   (replicas (item "Replicas" (group-n 4 number)))
+	   (isr  (item "Isr" (group-n 5 number))))
+    (cl-loop do (forward-char) ;; position at the start of line
+	     while (+rx-forward point topic-name partition-id leader replicas isr line-end)
+	     for partition-id       = (match-string 2)
+	     for partition-leader   = (match-string 3)
+	     for partition-replicas = (string-to-number (match-string 4))
+	     collect (list partition-id partition-leader partition-replicas))))
+#+end_src
 ** Volume management
 #+begin_src emacs-lisp
 (use-package volume
