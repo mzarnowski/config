@@ -1047,7 +1047,7 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 
 ;; cannot be cl-defun, lands us at the start of the next line after the drawer opening
 (defun +org-drawer-start-regexp (name)
-  (rx line-start (* (or " " "	")) ":" (eval name) ":" (*? whitespace) line-end))
+  (rx line-start (* (or " " "	")) ":" (literal name) ":" (*? whitespace) line-end))
 
 (defun +org-drawer-store (name value &key unique)
   (save-excursion
