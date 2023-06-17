@@ -396,9 +396,7 @@ Let's have the clean buffers
 
 (use-package tramp
   :config
-  (push (cons "docker" tramp-docker-parameters) tramp-methods)
-  (push (cons "docker" (alist-get 'tramp-remote-shell tramp-docker-parameters))
-	vterm-tramp-shells))
+  (push (cons "docker" tramp-docker-parameters) tramp-methods))
 
 (defun tramp-docker-containers ()
   (let* ((command "docker ps | awk '$NF != \"NAMES\" { print $NF \":\" }'")
@@ -897,10 +895,12 @@ the popup for selecting targets from all matching keys. If set to nil, all match
 *** Install v-term
 
 #+BEGIN_SRC emacs-lisp
-  (use-package vterm
-    :commands vterm
-    :config
-    (setq vterm-max-scrollback 10000))
+    (use-package vterm
+      :commands vterm
+      :config
+      (setq vterm-max-scrollback 10000)
+      (push (cons "docker" (alist-get 'tramp-remote-shell tramp-docker-parameters))
+	vterm-tramp-shells))
 #+END_SRC 
 
 ** +hash
